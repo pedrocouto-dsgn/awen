@@ -18,10 +18,19 @@ export type Pause = { reason: PauseReason; until: number; message: string }
 type AnalysisContextValue = {
   stats: QueueStats
   pause: Pause | null
-  /** Wake the worker (e.g. after new items were added). */
+  /** Wake the worker (e.g. after new items were added), in whichever tab runs it. */
   kick: () => void
+  /** Re-read the counters (e.g. after approving or rejecting). */
+  refreshStats: () => Promise<void>
   retryFailed: (ids?: string[]) => Promise<number>
 }
+
+type ChannelMessage =
+  | { type: "state"; stats: QueueStats; pause: Pause | null }
+  | { type: "kick" }
+  | { type: "hello" }
+
+const CHANNEL = "awen-analysis"
 
 const AnalysisContext = createContext<AnalysisContextValue | null>(null)
 
@@ -30,8 +39,56 @@ export function AnalysisProvider({ initialStats, children }: { initialStats: Que
   const [stats, setStats] = useState(initialStats)
   const [pause, setPause] = useState<Pause | null>(null)
   const wake = useRef<(() => void) | null>(null)
+  const channel = useRef<BroadcastChannel | null>(null)
+  const isWorker = useRef(false)
+  const latest = useRef<{ stats: QueueStats; pause: Pause | null }>({ stats: initialStats, pause: null })
 
-  const kick = useCallback(() => wake.current?.(), [])
+  // Only one tab runs the worker (Web Locks); it broadcasts its state to the other tabs.
+  useEffect(() => {
+    if (typeof BroadcastChannel === "undefined") return
+    const ch = new BroadcastChannel(CHANNEL)
+    channel.current = ch
+    ch.onmessage = (e: MessageEvent<ChannelMessage>) => {
+      if (e.data.type === "state") {
+        setStats(e.data.stats)
+        setPause(e.data.pause)
+      } else if (e.data.type === "kick") {
+        wake.current?.()
+      } else if (e.data.type === "hello" && isWorker.current) {
+        ch.postMessage({ type: "state", ...latest.current } satisfies ChannelMessage)
+      }
+    }
+    // A newly opened tab asks the worker tab for the current state.
+    ch.postMessage({ type: "hello" } satisfies ChannelMessage)
+    return () => {
+      ch.close()
+      channel.current = null
+    }
+  }, [])
+
+  const publish = useCallback((next: QueueStats, nextPause: Pause | null) => {
+    latest.current = { stats: next, pause: nextPause }
+    setStats(next)
+    setPause(nextPause)
+    channel.current?.postMessage({ type: "state", stats: next, pause: nextPause } satisfies ChannelMessage)
+  }, [])
+
+  const kick = useCallback(() => {
+    wake.current?.()
+    channel.current?.postMessage({ type: "kick" } satisfies ChannelMessage)
+  }, [])
+
+  const refreshStats = useCallback(async () => {
+    try {
+      const res = await fetch("/api/analysis/stats", { cache: "no-store" })
+      if (!res.ok) return
+      const next = (await res.json()) as QueueStats
+      setStats(next)
+      channel.current?.postMessage({ type: "state", stats: next, pause: null } satisfies ChannelMessage)
+    } catch {
+      // Counters will catch up on the next worker cycle.
+    }
+  }, [])
 
   useEffect(() => {
     const controller = new AbortController()
@@ -64,16 +121,14 @@ export function AnalysisProvider({ initialStats, children }: { initialStats: Que
         }
 
         const { result, stats: next } = response
-        setStats(next)
 
         if (result.state === "paused") {
           const wait = Math.min(result.retryAfterMs, MAX_PAUSE_MS)
-          setPause({ reason: result.reason, until: Date.now() + wait, message: result.error })
+          publish(next, { reason: result.reason, until: Date.now() + wait, message: result.error })
           await sleep(wait)
-          setPause(null)
           continue
         }
-        setPause(null)
+        publish(next, null)
 
         if (result.state === "idle") {
           const dueIn = next.nextDue ? new Date(next.nextDue).getTime() - Date.now() : Infinity
@@ -88,12 +143,22 @@ export function AnalysisProvider({ initialStats, children }: { initialStats: Que
 
     // One worker per browser: other tabs wait for the lock instead of doubling requests.
     if ("locks" in navigator) {
-      void navigator.locks.request("awen-analysis-worker", { signal }, () => loop()).catch(() => undefined)
+      void navigator.locks
+        .request("awen-analysis-worker", { signal }, async () => {
+          isWorker.current = true
+          try {
+            await loop()
+          } finally {
+            isWorker.current = false
+          }
+        })
+        .catch(() => undefined)
     } else {
+      isWorker.current = true
       void loop()
     }
     return () => controller.abort()
-  }, [router])
+  }, [publish, router])
 
   const retryFailed = useCallback(
     async (ids?: string[]) => {
@@ -104,15 +169,18 @@ export function AnalysisProvider({ initialStats, children }: { initialStats: Que
       })
       if (!res.ok) throw new Error("Não foi possível reenviar para análise.")
       const data = (await res.json()) as { requeued: number; stats: QueueStats }
-      setStats(data.stats)
+      publish(data.stats, null)
       kick()
       router.refresh()
       return data.requeued
     },
-    [kick, router],
+    [kick, publish, router],
   )
 
-  const value = useMemo(() => ({ stats, pause, kick, retryFailed }), [stats, pause, kick, retryFailed])
+  const value = useMemo(
+    () => ({ stats, pause, kick, refreshStats, retryFailed }),
+    [stats, pause, kick, refreshStats, retryFailed],
+  )
   return <AnalysisContext.Provider value={value}>{children}</AnalysisContext.Provider>
 }
 
