@@ -45,13 +45,26 @@ supabase db push                                   # applies supabase/migrations
 
 `pgvector` must already be enabled (Database → Extensions → `vector`). `references.embedding vector(768)` is created but unused in Phase 1.
 
-### 2. Auth (single user, email + password)
+### 2. Auth (invite-only, email + password)
 
-1. Authentication → Sign In / Providers → Email: enabled. Turn **off** "Allow new users to sign up".
-2. Authentication → Users → *Add user* → *Create new user*: your email + a strong password, with *Auto Confirm User* checked.
-3. Authentication → URL Configuration: Site URL `https://awen.vercel.app`, and add `http://localhost:3000` to the redirect URLs.
+Awen is private: public sign-up is off and you create accounts yourself. Each user only ever sees their own data (RLS on `owner_id`).
 
-The vocabularies (shot type, camera angle, camera movement, lighting, mood) are seeded automatically for your user on first login.
+1. Authentication → Sign In / Providers: keep **Email** enabled and turn **off** "Allow new users to sign up".
+2. Authentication → URL Configuration:
+   - Site URL: `https://awen.vercel.app` (use `http://localhost:3000` while you only run it locally)
+   - Redirect URLs: `http://localhost:3000/**` and `https://awen.vercel.app/**`
+3. Adding a person, either way works:
+   - **Create user** (no email needed): Authentication → Users → *Add user → Create new user*, set a password, tick *Auto Confirm User*, and send the credentials privately.
+   - **Invite user**: Authentication → Users → *Add user → Send invitation*. The link opens Awen, which asks the person to set a password (`/auth/set-password`).
+4. Anyone can reset their password at `/auth/forgot-password`.
+
+> Supabase's built-in email sender only delivers to members of your Supabase team and has a low hourly limit. To send invites or password resets to other people, configure custom SMTP (Authentication → Emails → SMTP settings, e.g. Resend).
+
+Optional, more robust email links: in Authentication → Emails → Templates, set the *Invite user* link to
+`{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=invite` and the *Reset password* link to
+`{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=recovery`. The default templates also work.
+
+The vocabularies (shot type, camera angle, camera movement, lighting, mood) are seeded automatically for each user on their first login.
 
 ### 3. Security check (optional)
 
