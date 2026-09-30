@@ -89,9 +89,31 @@ create table public."references" (
   notes text,
 
   -- search
-  search_tsv tsvector,
-  embedding vector(768)                  -- reserved for Phase 2 (semantic search)
+  search_tsv tsvector
+  -- embedding vector(768) is added below, in the schema where pgvector lives
 );
+
+-- pgvector: Supabase installs extensions in the "extensions" schema, which is not
+-- always on the search_path (e.g. in the SQL editor). Find the schema where
+-- vector is installed (or install it in "extensions") and qualify the type.
+do $$
+declare
+  v_schema text;
+begin
+  select n.nspname into v_schema
+  from pg_extension e join pg_namespace n on n.oid = e.extnamespace
+  where e.extname = 'vector';
+
+  if v_schema is null then
+    create schema if not exists extensions;
+    create extension vector with schema extensions;
+    v_schema := 'extensions';
+  end if;
+
+  -- Reserved for Phase 2 (semantic search); unused in Phase 1.
+  execute format('alter table public."references" add column embedding %I.vector(768)', v_schema);
+end;
+$$;
 
 create index references_owner_status_idx on public."references" (owner_id, status, created_at desc);
 create index references_queue_idx on public."references" (status, next_attempt_at)
