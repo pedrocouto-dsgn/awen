@@ -141,7 +141,10 @@ export function ReviewPanel({ reference: r, vocab, editing, draft, onDraftChange
           <p className="text-xs text-muted-foreground">Sem análise de IA: este link não tem mídia. Preencha à mão.</p>
         ) : r.ai?.model ? (
           <p className="flex items-center gap-1 text-xs text-muted-foreground">
-            <SparklesIcon className="size-3" aria-hidden /> Sugerido por IA ({r.ai.model}). Revise antes de aprovar.
+            <SparklesIcon className="size-3" aria-hidden />
+            {r.status === "approved"
+              ? `Análise inicial por IA (${r.ai.model}).`
+              : `Sugerido por IA (${r.ai.model}). Revise antes de aprovar.`}
           </p>
         ) : null}
       </div>
