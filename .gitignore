@@ -20,11 +20,21 @@ next-env.d.ts
 supabase/.temp/
 supabase/.branches/
 
-# media must never be committed
+# media must never be committed (app icons may live in public/)
 *.mp4
 *.mov
 *.webm
 *.m4v
+*.jpg
+*.jpeg
+*.png
+*.webp
+*.gif
+*.avif
+*.heic
+*.tif
+*.tiff
+!public/**
 
 # os / editor
 .DS_Store

@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation"
 import { createContext, useCallback, useContext, useMemo, useReducer, useRef, useState } from "react"
 
+import { useOptionalAnalysis } from "@/features/analysis/analysis-provider"
 import { LIMITS, mediaTypeForMime } from "@/lib/media/limits"
 import type { CreateUploadResponse, DuplicateMatch, LinkResponse } from "@/lib/validation/ingest"
 
@@ -65,6 +66,7 @@ const CONCURRENCY = 2
 
 export function IngestProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter()
+  const analysis = useOptionalAnalysis()
   const [items, dispatch] = useReducer(reducer, [])
   const [dialogOpen, setDialogOpen] = useState(false)
   const queue = useRef<IngestItem[]>([])
@@ -164,12 +166,13 @@ export function IngestProvider({ children }: { children: React.ReactNode }) {
           .finally(() => {
             running.current -= 1
             router.refresh()
+            analysis?.kick()
             run()
           })
       }
     }
     run()
-  }, [processFile, processLink, router, update])
+  }, [analysis, processFile, processLink, router, update])
 
   const enqueue = useCallback(
     (item: IngestItem) => {

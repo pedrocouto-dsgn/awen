@@ -3,6 +3,7 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 
+import { useOptionalAnalysis } from "@/features/analysis/analysis-provider"
 import { cn } from "@/lib/utils"
 
 export const NAV_ITEMS = [
@@ -14,6 +15,7 @@ export const NAV_ITEMS = [
 
 export function NavLinks({ className, onNavigate }: { className?: string; onNavigate?: () => void }) {
   const pathname = usePathname()
+  const toReview = useOptionalAnalysis()?.stats.toReview ?? 0
   return (
     <nav className={cn("flex items-center gap-1", className)} aria-label="Principal">
       {NAV_ITEMS.map((item) => {
@@ -30,6 +32,11 @@ export function NavLinks({ className, onNavigate }: { className?: string; onNavi
             )}
           >
             {item.label}
+            {item.href === "/review" && toReview > 0 ? (
+              <span className="ml-1.5 rounded-full bg-primary px-1.5 py-0.5 text-[10px] leading-none font-medium text-primary-foreground tabular-nums">
+                {toReview > 99 ? "99+" : toReview}
+              </span>
+            ) : null}
           </Link>
         )
       })}

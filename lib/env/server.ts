@@ -18,6 +18,8 @@ const serverSchema = z.object({
     .string()
     .optional()
     .transform((v) => (v && v.trim() !== "" ? v.trim() : "gemini-3.8-flash")),
+  // Max AI analyses per user in a rolling 24h window (protects the shared Gemini quota).
+  ANALYSIS_DAILY_LIMIT: z.coerce.number().int().positive().default(100),
   // Protects /api/cron/*. Vercel sends it as "Authorization: Bearer <CRON_SECRET>".
   CRON_SECRET: z.string().optional(),
 })
