@@ -80,6 +80,32 @@ export async function setPassword(_prev: FormState, formData: FormData): Promise
   redirect("/library")
 }
 
+const changePasswordSchema = z
+  .object({
+    current: z.string().min(1, "Informe a senha atual."),
+    password: z.string().min(8, "A nova senha precisa ter pelo menos 8 caracteres.").max(72, "Senha longa demais."),
+    confirm: z.string(),
+  })
+  .refine((v) => v.password === v.confirm, { message: "As senhas não coincidem.", path: ["confirm"] })
+
+/** Account settings: checks the current password before setting a new one. */
+export async function changePassword(_prev: FormState, formData: FormData): Promise<FormState> {
+  const parsed = changePasswordSchema.safeParse(Object.fromEntries(formData))
+  if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Dados inválidos." }
+
+  const supabase = await createClient()
+  const { data } = await supabase.auth.getUser()
+  const email = data.user?.email
+  if (!email) return { error: "Sua sessão expirou. Entre novamente." }
+
+  const check = await supabase.auth.signInWithPassword({ email, password: parsed.data.current })
+  if (check.error) return { error: "A senha atual está incorreta." }
+
+  const { error } = await supabase.auth.updateUser({ password: parsed.data.password })
+  if (error) return { error: authErrorMessage(error.message) }
+  return { success: "Senha alterada." }
+}
+
 async function requestOrigin(): Promise<string> {
   const h = await headers()
   const host = h.get("x-forwarded-host") ?? h.get("host") ?? "localhost:3000"

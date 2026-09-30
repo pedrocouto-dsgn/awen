@@ -4,8 +4,8 @@ import { cn } from "cn"
 import { Slot } from "radix-ui"
 
 const buttonVariants = cva(
-  // Awen: sharp corners, uppercase tracked labels, Frost is the single action color.
-  "group/button type-button inline-flex shrink-0 items-center justify-center rounded-none border border-transparent bg-clip-padding whitespace-nowrap transition-colors outline-none select-none disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+  // Awen: soft 10px corners, uppercase tracked labels, Frost is the single action color.
+  "group/button type-button inline-flex shrink-0 items-center justify-center rounded-input border border-transparent bg-clip-padding whitespace-nowrap transition-colors outline-none select-none disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
   {
     variants: {
       variant: {
@@ -14,9 +14,9 @@ const buttonVariants = cva(
         accent:
           "bg-primary bg-gradient-accent text-primary-foreground hover:bg-primary-hover hover:bg-none active:bg-primary-active active:bg-none",
         outline:
-          "border-primary bg-transparent text-foreground hover:bg-accent aria-expanded:bg-accent",
+          "border-primary bg-transparent text-foreground hover:bg-glass-hover aria-expanded:bg-glass-hover",
         secondary: "bg-secondary text-secondary-foreground hover:bg-border-strong aria-expanded:bg-border-strong",
-        ghost: "text-foreground hover:bg-accent aria-expanded:bg-accent",
+        ghost: "text-foreground hover:bg-glass-hover aria-expanded:bg-glass-hover",
         /** Danger outline (Rejeitar, Excluir): on canvas only. */
         destructive: "border-destructive bg-transparent text-destructive hover:bg-destructive/10",
         link: "text-link underline-offset-4 hover:underline",

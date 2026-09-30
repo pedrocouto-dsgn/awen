@@ -51,12 +51,12 @@ export function FailedList({ items }: { items: ReferenceView[] }) {
           <RotateCcwIcon /> Tentar todas de novo
         </Button>
       </div>
-      <ul className="divide-y rounded-lg border">
+      <ul className="glass divide-y divide-glass-border overflow-hidden rounded-2xl">
         {items.map((r) => {
           const src = poster(r)
           return (
             <li key={r.id} className="flex items-center gap-3 p-3">
-              <div className="flex size-14 shrink-0 items-center justify-center overflow-hidden rounded-md bg-media">
+              <div className="flex size-14 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-media">
                 {src ? (
                   // eslint-disable-next-line @next/next/no-img-element -- presigned private URL
                   <img src={src} alt="" className="size-full object-cover" />

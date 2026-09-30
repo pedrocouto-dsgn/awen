@@ -59,7 +59,7 @@ type Insertable<Row, Required extends keyof Row> = Pick<Row, Required> &
 
 type ReferenceInsert = Insertable<Omit<ReferenceRow, "search_tsv">, "type" | "source_kind"> & OwnedInsert
 
-type PeopleRow = Owned & { name: string }
+type PeopleRow = Owned & { name: string; photo_key: string | null }
 type ReferencePeopleRow = Owned & {
   reference_id: string
   person_id: string

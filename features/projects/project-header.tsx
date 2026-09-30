@@ -1,7 +1,6 @@
 "use client"
 
-import { ArrowLeftIcon, PencilIcon, StarIcon, Trash2Icon } from "lucide-react"
-import Link from "next/link"
+import { PencilIcon, StarIcon, Trash2Icon } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
 import { toast } from "sonner"
@@ -21,9 +20,6 @@ export function ProjectHeader({ project, total }: { project: Project; total: num
 
   return (
     <header className="flex flex-col gap-3">
-      <Link href="/projects" className="type-nav flex items-center gap-2 text-muted-foreground hover:text-foreground">
-        <ArrowLeftIcon className="size-4" aria-hidden /> Projetos
-      </Link>
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="flex min-w-0 flex-col gap-2">
           <h1 className="type-display-lg break-words">{project.name}</h1>

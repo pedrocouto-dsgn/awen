@@ -9,7 +9,7 @@ export default function AppNotFound() {
     <EmptyState
       icon={SearchXIcon}
       title="Não encontrado"
-      description="Esta referência, pessoa ou projeto não existe ou foi excluído."
+      description="Esta referência, artista ou projeto não existe ou foi excluído."
       action={
         <Button variant="outline" size="sm" asChild>
           <Link href="/library">Ir para a biblioteca</Link>

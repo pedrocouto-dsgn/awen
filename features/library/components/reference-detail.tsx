@@ -161,12 +161,15 @@ export function ReferenceDetail({
   }
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col lg:h-[calc(100svh-4rem)] lg:flex-none lg:flex-row lg:overflow-hidden">
-      <section aria-label="Mídia" className="relative h-[60svh] shrink-0 lg:h-auto lg:min-h-0 lg:min-w-0 lg:flex-1">
+    <div className="flex min-h-0 flex-1 flex-col gap-3 p-3 pt-0 lg:flex-row lg:overflow-hidden">
+      <section
+        aria-label="Mídia"
+        className="relative h-[60svh] shrink-0 overflow-hidden rounded-2xl bg-media lg:h-auto lg:min-h-0 lg:min-w-0 lg:flex-1"
+      >
         <Button
           variant="outline"
           size="sm"
-          className="absolute top-4 left-4 z-10 bg-background"
+          className="glass-strong absolute top-4 left-4 z-10"
           onClick={() => (window.history.length > 1 ? router.back() : router.push("/library"))}
         >
           <ArrowLeftIcon /> Voltar
@@ -176,9 +179,9 @@ export function ReferenceDetail({
 
       <aside
         aria-label="Dados da referência"
-        className="flex min-h-0 w-full flex-col border-t bg-gradient-dusk lg:w-[420px] lg:border-t-0 lg:border-l"
+        className="glass flex min-h-0 w-full flex-col overflow-hidden rounded-2xl lg:w-[420px]"
       >
-        <div className="flex items-center gap-2 border-b px-4 py-2">
+        <div className="flex items-center gap-2 border-b border-glass-border px-4 py-2">
           {reference.status !== "approved" ? <Badge variant="outline">{STATUS_LABEL[reference.status]}</Badge> : null}
           <div className="ml-auto flex items-center gap-1">
             {editing ? (

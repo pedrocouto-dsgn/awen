@@ -19,7 +19,7 @@ export const referencePersonLinkSchema = z
     name: name.optional(),
     role: personRoleSchema,
   })
-  .refine((v) => Boolean(v.personId) !== Boolean(v.name), { message: "Informe a pessoa." })
+  .refine((v) => Boolean(v.personId) !== Boolean(v.name), { message: "Informe o artista." })
 
 export const referencePersonUnlinkSchema = z.object({ personId: z.uuid(), role: personRoleSchema })
 

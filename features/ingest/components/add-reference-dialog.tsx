@@ -1,10 +1,10 @@
 "use client"
 
-import { LinkIcon, PlusIcon, UploadIcon } from "lucide-react"
+import { LinkIcon, UploadIcon } from "lucide-react"
 import { useId, useRef, useState } from "react"
 
 import { Button } from "@/components/ui/button"
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { IMAGE_MIME_TYPES, VIDEO_MIME_TYPES } from "@/lib/media/limits"
@@ -14,6 +14,7 @@ import { useIngest } from "../ingest-provider"
 
 export const ACCEPT = [...IMAGE_MIME_TYPES, ...VIDEO_MIME_TYPES].join(",")
 
+/** Opened from the sidebar ("Adicionar referência") through the ingest context. */
 export function AddReferenceDialog() {
   const { addFiles, addLink, dialogOpen, setDialogOpen } = useIngest()
   const [url, setUrl] = useState("")
@@ -31,11 +32,6 @@ export function AddReferenceDialog() {
 
   return (
     <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-      <DialogTrigger asChild>
-        <Button variant="accent" size="sm">
-          <PlusIcon /> <span className="hidden sm:inline">Adicionar</span>
-        </Button>
-      </DialogTrigger>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>Adicionar referência</DialogTitle>

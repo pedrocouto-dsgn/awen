@@ -1,15 +1,17 @@
 import type { Metadata } from "next"
 
+import { PageBreadcrumb } from "@/components/shell/page-breadcrumb"
 import { PeopleList, type PersonRow } from "@/features/people/people-list"
+import { presignGetMany } from "@/lib/r2/presign"
 import { createClient } from "@/lib/supabase/server"
 import type { PersonRole } from "@/types/database"
 
-export const metadata: Metadata = { title: "Pessoas" }
+export const metadata: Metadata = { title: "Artistas" }
 
 export default async function PeoplePage() {
   const supabase = await createClient()
   const [people, links] = await Promise.all([
-    supabase.from("people").select("id, name").order("name"),
+    supabase.from("people").select("id, name, photo_key").order("name"),
     supabase.from("reference_people").select("person_id, reference_id, role"),
   ])
   if (people.error) throw people.error
@@ -23,12 +25,19 @@ export default async function PeoplePage() {
     stats.set(l.person_id, s)
   }
 
+  const photos = await presignGetMany((people.data ?? []).map((p) => p.photo_key))
   const rows: PersonRow[] = (people.data ?? []).map((p) => ({
     id: p.id,
     name: p.name,
+    photoUrl: p.photo_key ? (photos.get(p.photo_key) ?? null) : null,
     count: stats.get(p.id)?.refs.size ?? 0,
     roles: [...(stats.get(p.id)?.roles ?? [])],
   }))
 
-  return <PeopleList people={rows} />
+  return (
+    <>
+      <PageBreadcrumb items={[{ label: "Artistas" }]} />
+      <PeopleList people={rows} />
+    </>
+  )
 }

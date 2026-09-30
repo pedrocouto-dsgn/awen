@@ -7,7 +7,7 @@ export default function AuthLayout({ children }: LayoutProps<"/">) {
         <div className="flex justify-center">
           <Wordmark className="type-display-mega" />
         </div>
-        <div className="border border-border-strong bg-card bg-gradient-dusk p-8">{children}</div>
+        <div className="glass rounded-2xl p-8">{children}</div>
       </div>
     </main>
   )

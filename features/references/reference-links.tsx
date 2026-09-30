@@ -152,8 +152,8 @@ export function ReferenceLinks({
     <div className="flex flex-col gap-6">
       <div className="h-px bg-gradient-hairline" aria-hidden />
 
-      <section className="flex flex-col gap-2.5" aria-label="Pessoas">
-        <h3 className="type-label text-muted-foreground">Pessoas</h3>
+      <section className="flex flex-col gap-2.5" aria-label="Artistas">
+        <h3 className="type-label text-muted-foreground">Artistas</h3>
         {people.length > 0 ? (
           <ul className="flex flex-col">
             {people.map((p) => (
@@ -200,8 +200,8 @@ export function ReferenceLinks({
             </SelectContent>
           </Select>
           <EntityCombobox
-            label="Pessoa"
-            placeholder="Buscar ou criar pessoa"
+            label="Artista"
+            placeholder="Buscar ou criar artista"
             search={searchPeople}
             onSelect={(o) => void linkPerson({ personId: o.id }, role)}
             onCreate={(name) => void linkPerson({ name }, role)}

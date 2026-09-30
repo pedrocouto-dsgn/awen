@@ -47,7 +47,7 @@ export function ProjectsGrid({ projects }: { projects: ProjectCardData[] }) {
   }
 
   return (
-    <div className="flex flex-col gap-8 px-4 py-8 md:px-8">
+    <div className="flex flex-col gap-8 px-4 pt-4 pb-8 md:px-8">
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div className="flex flex-col gap-2">
           <h1 className="type-display-lg">Projetos</h1>
@@ -75,7 +75,7 @@ export function ProjectsGrid({ projects }: { projects: ProjectCardData[] }) {
       ) : (
         <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
           {projects.map((p) => (
-            <li key={p.id} className="group relative flex flex-col border border-border-strong bg-card bg-gradient-card">
+            <li key={p.id} className="glass group relative flex flex-col overflow-hidden rounded-2xl">
               <Link href={`/projects/${p.id}`} className="flex flex-col">
                 <div className="grid aspect-[16/10] grid-cols-2 grid-rows-2 gap-px bg-media">
                   {p.covers.length === 0 ? (

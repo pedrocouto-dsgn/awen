@@ -1,7 +1,7 @@
 ---
 version: alpha
 name: Awen
-description: A quiet, cinematic dark system for a private visual reference bank, built from two provided palettes that share one job each. The **graphite family** (Air Black #111111, Black Olive #3A3A3A, Dark Liver #4D4D4D, Gray #B7BABB, Pastel Blue #B4C7CC) is the structure - canvas, cards, hairlines and body text. The **blue family** (Deep Tide #1E3A52, Steel #4B708D, Mist #8EB0C9, Frost #CADCEA) is the atmosphere and the action - gradients, glows, selected states and the primary button. The canvas is near-black graphite holding frost-blue type; the top of every page is lit by a blue-into-graphite gradient. **Gradients are the brand signature**. Type is a single sans family at modest weights (display 500, body 400). Spacing follows an explicit 8px ladder. Sharp corners on actions and cards. The media is always the hero; the interface frames it.
+description: A quiet, cinematic dark system for a private visual reference bank, built from two provided palettes that share one job each. The **graphite family** (Air Black #111111, Black Olive #3A3A3A, Dark Liver #4D4D4D, Gray #B7BABB, Pastel Blue #B4C7CC) is the structure - canvas, cards, hairlines and body text. The **blue family** (Deep Tide #1E3A52, Steel #4B708D, Mist #8EB0C9, Frost #CADCEA) is the atmosphere and the action - gradients, glows, selected states and the primary button. The canvas is near-black graphite holding frost-blue type; the top of every page is lit by a blue-into-graphite gradient. **Gradients are the brand signature**. Type is a single sans family at modest weights (display 500, body 400). Spacing follows an explicit 8px ladder. Soft 8-16px corners and glass surfaces (translucent graphite with backdrop blur) over an ambient blue canvas. The media is always the hero; the interface frames it.
 colors:
   air-black: '#111111'
   black-olive: '#3A3A3A'
@@ -349,7 +349,7 @@ Awen is a private visual reference bank, so the interface behaves like a dark ga
 
 The brand signature is **gradient**. The page floor fades from Deep Tide at the top into graphite, cards step from Black Olive into near-black, and featured panels blend blue into graphite (`{gradients.dusk}`). Gradients are built only from palette tones (plus one derived intermediate), never from new hues. Shadows are not a depth tool.
 
-Type runs **Inter** at modest weights (display 500, body 400). CTA labels are uppercase with generous tracking. Spacing follows the 8px ladder. Actions and cards have sharp 0px corners; pill geometry is reserved for badges.
+Type runs **Inter** at modest weights (display 500, body 400). CTA labels are uppercase with generous tracking. Spacing follows the 8px ladder. Corners are soft, on an 8-16px ladder; pill geometry is reserved for badges and avatars. Panels, the sidebar and the top bar are **glass**: translucent graphite with backdrop blur, floating 12px from the viewport edge over fixed blue glows.
 
 **Key Characteristics:**
 - Graphite structure: #111111, #3A3A3A, #4D4D4D, #B7BABB, #B4C7CC.
@@ -358,7 +358,8 @@ Type runs **Inter** at modest weights (display 500, body 400). CTA labels are up
 - Primary CTA is Frost fill with Air Black text. No second brand hue.
 - Gradients are a core visual element (8 named tokens), used with restraint.
 - Single sans family: Inter. Display weight stays at 500.
-- Sharp `{rounded.none}` corners on CTAs, cards and bands.
+- Soft corners: 10px on controls, 12-14px on media and menus, 16px on panels and modals.
+- Glass surfaces (`glass`, `glass-strong`) over the ambient canvas.
 - Media is the hero of every screen.
 - Hairlines plus gradient brightness steps for depth. No drop shadow tiers.
 
@@ -473,8 +474,10 @@ Depth is **brightness step plus gradient**, not shadow.
 
 | Level | Treatment | Use |
 |---|---|---|
-| Flat | `{colors.canvas}` with `{gradients.canvas}` | Page |
-| Raised | `{colors.canvas-elevated}` with `{gradients.card}` | Cards, panels, inputs |
+| Flat | `{colors.canvas}` with the ambient glows (`--gradient-ambient`, fixed) | Page |
+| Glass | `glass`: translucent graphite, 24px blur, 1px `--glass-border`, inner top highlight | Sidebar, top bar, cards, side panels, lists |
+| Glass strong | `glass-strong`: more opaque, 32px blur, overlay shadow | Popovers, menus, selects, dialogs, tray |
+| Glass panel | `glass-panel`: near-opaque graphite, same border and shadow, **no blur** | Sheets (Filtros, mobile menu). Large animated panels must not use backdrop-filter: blurring them every frame over the feed makes them lag. Modal and sheet scrims are plain dimming, no blur, for the same reason. |
 | Featured | `{gradients.dusk}` | Analysis panel, login card |
 | Lit | `{gradients.glow}` overlay | Hero, empty states, backdrop of the active item |
 | Selected | `{gradients.steel}` | Active nav, active chip |
@@ -485,51 +488,53 @@ One optional soft shadow on modals and popovers only: `0 8px 24px rgba(0,0,0,0.4
 
 ## Shapes
 
+Corners live on an 8-16px ladder. Tailwind classes map to these tokens in `app/globals.css`.
+
 | Token | Value | Use |
 |---|---|---|
-| `{rounded.none}` | 0px | Every CTA, card, chip, media item |
-| `{rounded.xs}` | 2px | Tiny inline tags |
-| `{rounded.sm}` | 4px | Inputs, search field, toasts |
-| `{rounded.md}` | 6px | Compact popovers |
-| `{rounded.lg}` | 8px | Mobile-only collapse cards |
-| `{rounded.xl}` | 12px | Modals and dialogs |
-| `{rounded.full}` | 9999px | Badges and avatars only |
+| `rounded-tag` | 5px | Tiny controls only (checkbox, kbd) |
+| `rounded-sm` | 8px | Filter chips, swatches, labels over media |
+| `rounded-input` / `rounded-md` | 10px | Buttons, inputs, search field, toasts |
+| `rounded-lg` / `rounded-popover` | 12px | Popovers, menus, thumbnails |
+| `rounded-xl` | 14px | Media cards, nav items |
+| `rounded-2xl` / `rounded-modal` | 16px | Panels, sidebar, top bar, modals |
+| `rounded-full` | 9999px | Badges and avatars only |
 
 ## Components
 
 ### Navigation
-**`sidebar`** and **`top-bar`** sit on `{colors.canvas}`. Items (`nav-item`) are uppercase Gray text; the active item (`nav-item-active`) uses `{gradients.steel}` with Ink text. Pendentes shows a count `badge-pill`. The active-project chip sits in the top bar.
+**`sidebar`** is a floating glass panel modelled on the "Quantix" reference, and the only chrome: there is no top bar (phones get a floating menu button that opens the same content in a drawer). Expanded (272px): brand tile with "Awen / Banco de referências" and a bordered chevron toggle (also `[`); a "Bem-vindo de volta, {nome}" greeting with the last sign-in date; the search field and the Frost "Adicionar referência" button, inset like the rows; labelled sections **Visão geral** (Biblioteca, Revisão, Falharam when there are failures), **Explorar** (Vídeos, Imagens, Favoritas, Aleatória), **Organizar** (Artistas, Projetos); then the analysis-queue card and the account row (avatar, name, email) that opens Configurações. Rows are 44px with 20px outline icons; the active row is a glass pill brightening to the right (`bg-gradient-nav-active`) with a short bar at its end; counts sit in small bordered boxes. Collapsed (68px): icons only, a tooltip on every item, section labels become short hairlines, attention counts become dot badges. The state persists in the `awen_sidebar` cookie.
 
 ### Buttons
-- **`button-primary`**: Frost fill, Air Black text, 48px high, 0px corners. The only filled action color.
+- **`button-primary`**: Frost fill, Air Black text, 44px high, 10px corners. The only filled action color.
 - **`button-primary-gradient`**: filled with `{gradients.accent}`. The single most important action on a screen (Aprovar, Adicionar).
 - **`button-outline`**: transparent, 1px Frost border, Ink text.
 - **`button-tertiary-text`**: inline uppercase link.
 - **`button-danger-outline`**: Rejeitar and Apagar, danger text and border, on canvas only.
 
 ### Media
-- **`media-card`**: edge to edge, no padding, 0px corners. On hover a `{gradients.scrim}` reveals title, duration and select checkbox.
+- **`media-card`** (library feed, Pinterest-style): masonry where each pin goes into the shortest column, ~220px columns with 16px gutters (8px on phones), 16px corners, title and shot/mood below the image. On hover the pin dims and shows "Salvar" (adds to the active project), the palette and the rating. Infinite scroll. On hover a `{gradients.scrim}` reveals title, duration and select checkbox.
 - **`media-card-overlay`** and **`player-controls`**: always over a scrim.
 
 ### Panels
-**`surface-card`** and **`modal`** use Black Olive with `{gradients.card}` and a 1px strong hairline. **`analysis-panel`** uses `{gradients.dusk}`: it holds read-only technical data, the palette row, editable AI fields (dropdowns from the fixed lists), tag chips and notes.
+**`surface-card`**, lists and side panels use `glass` with 16px corners; **`modal`** uses `glass-strong`. Media and side panel sit side by side with a 12px gap, each in its own rounded panel. **`analysis-panel`** is a glass panel: it holds read-only technical data, the palette row, editable AI fields (dropdowns from the fixed lists), tag chips and notes.
 
 ### Data
-- **`palette-swatch`**: row of 5 to 6 swatches with hex and percentage, 48px high, 0px corners.
+- **`palette-swatch`**: row of 5 to 6 swatches with hex and percentage, 48px high.
 - **`stat-cell`**: big numbers with an uppercase label.
 - **`list-row`**: hairline-divided rows for people, projects, settings.
 - **`divider-accent`**: the gradient hairline between major sections.
 
 ### Forms & Tags
-- **`text-input`** and **`search-field`**: 48px and 44px high, 4px corners, 1px strong hairline, Frost focus ring.
-- **`filter-chip`** and **`filter-chip-active`** (steel gradient): uppercase caption, 0px corners, removable when active.
+- **`text-input`** and **`search-field`**: 48px and 44px high, 10px corners, 1px strong hairline, Frost focus ring.
+- **`filter-chip`** and **`filter-chip-active`** (steel gradient): uppercase caption, 8px corners, removable when active.
 - **`badge-pill`**: the only pill shape; counts, confidence labels, status.
 
 ### Review queue
 **`review-action-bar`**: fixed bottom bar with Rejeitar (danger outline), Editar (outline), Aprovar (`button-primary-gradient`), keyboard shortcuts as small captions. **`progress-bar`** (2px, accent gradient) shows queue position.
 
 ### Feedback
-**`toast`**: Black Olive, Ink text, 4px corners. Status as a small leading mark in the semantic color, never a full-color background.
+**`toast`**: Black Olive, Ink text, 10px corners. Status as a small leading mark in the semantic color, never a full-color background.
 
 ## Do's and Don'ts
 
@@ -547,8 +552,9 @@ One optional soft shadow on modals and popovers only: `0 8px 24px rgba(0,0,0,0.4
 - Don't put Gray body text on Dark Liver or on the steel gradient.
 - Don't put more than two prominent gradients in one viewport.
 - Don't tint, filter or overlay images and video, except the text scrim.
-- Don't use rounded or pill buttons.
-- Don't add drop shadow tiers.
+- Don't use pill buttons, or corners outside the 8-16px ladder on layout surfaces.
+- Don't put glass on glass without a reason; nested surfaces use hairlines, not another blur.
+- Don't add drop shadow tiers beyond `glass` and `glass-strong`.
 - Don't use pure black. The floor is Air Black (#111111).
 
 ## Responsive Behavior

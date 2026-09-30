@@ -132,7 +132,7 @@ export function VocabularyEditor({ vocab: initial, counts }: { vocab: VocabMap; 
               setEditing(null)
             }}
             className={cn(
-              "type-nav h-9 border px-4 transition-colors",
+              "type-nav h-9 rounded-input border px-4 transition-colors",
               category === c.key
                 ? "border-transparent bg-gradient-steel text-foreground"
                 : "border-border-strong text-muted-foreground hover:text-foreground",
@@ -149,11 +149,11 @@ export function VocabularyEditor({ vocab: initial, counts }: { vocab: VocabMap; 
           {meta.hint} A IA só escolhe entre os termos ativos. Termos arquivados continuam nas referências que já os usam.
         </p>
 
-        <ul className="flex flex-col border-t">
+        <ul className="glass flex flex-col divide-y divide-glass-border overflow-hidden rounded-2xl">
           {active.map((t, i) => {
             const used = counts[category][t.term] ?? 0
             return (
-              <li key={t.id} className="flex items-center gap-2 border-b py-2.5">
+              <li key={t.id} className="flex items-center gap-2 px-4 py-2.5">
                 {editing === t.id ? (
                   <form
                     className="flex flex-1 items-center gap-2"
@@ -232,9 +232,9 @@ export function VocabularyEditor({ vocab: initial, counts }: { vocab: VocabMap; 
         {archived.length > 0 ? (
           <div className="flex flex-col gap-2 pt-4">
             <h3 className="type-label text-muted-foreground">Arquivados</h3>
-            <ul className="flex flex-col border-t">
+            <ul className="glass flex flex-col divide-y divide-glass-border overflow-hidden rounded-2xl">
               {archived.map((t) => (
-                <li key={t.id} className="flex items-center gap-2 border-b py-2 text-muted-foreground">
+                <li key={t.id} className="flex items-center gap-2 px-4 py-2 text-muted-foreground">
                   <span className="flex-1 truncate line-through decoration-1">{t.term}</span>
                   <span className="type-caption w-24 text-right tabular-nums">
                     {counts[category][t.term] ?? 0} usos

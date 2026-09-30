@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 import { notFound } from "next/navigation"
 import { z } from "zod"
 
+import { PageBreadcrumb } from "@/components/shell/page-breadcrumb"
 import { ReferenceDetail } from "@/features/library/components/reference-detail"
 import { ReferenceLinks } from "@/features/references/reference-links"
 import { getActiveProject, loadLinks } from "@/lib/references/links"
@@ -33,16 +34,20 @@ export default async function ReferencePage({ params }: PageProps<"/library/[id]
   ])
   const own = links.get(view.id) ?? { people: [], projects: [] }
   return (
-    <ReferenceDetail key={view.id} reference={view} vocab={vocab}>
-      <ReferenceLinks
-        referenceId={view.id}
-        referenceType={view.type}
-        initialPeople={own.people}
-        initialProjects={own.projects}
-        activeProject={activeProject}
-        aiArtist={view.ai?.artist ?? null}
-        shortcuts
-      />
-    </ReferenceDetail>
+    // Full-height screen on large displays: the breadcrumb on top, the detail fills the rest.
+    <div className="flex flex-1 flex-col lg:h-svh lg:flex-none lg:overflow-hidden">
+      <PageBreadcrumb items={[{ label: "Biblioteca", href: "/library" }, { label: view.title ?? "Sem título" }]} />
+      <ReferenceDetail key={view.id} reference={view} vocab={vocab}>
+        <ReferenceLinks
+          referenceId={view.id}
+          referenceType={view.type}
+          initialPeople={own.people}
+          initialProjects={own.projects}
+          activeProject={activeProject}
+          aiArtist={view.ai?.artist ?? null}
+          shortcuts
+        />
+      </ReferenceDetail>
+    </div>
   )
 }

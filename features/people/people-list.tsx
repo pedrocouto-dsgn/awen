@@ -6,6 +6,8 @@ import { useRouter } from "next/navigation"
 import { useState } from "react"
 import { toast } from "sonner"
 
+import { Avatar } from "@/components/shell/avatar"
+
 import { ConfirmDialog } from "@/components/shell/confirm-dialog"
 import { EmptyState } from "@/components/shell/empty-state"
 import { Button } from "@/components/ui/button"
@@ -13,7 +15,7 @@ import { Input } from "@/components/ui/input"
 import { ROLE_LABEL } from "@/lib/validation/entities"
 import type { PersonRole } from "@/types/database"
 
-export type PersonRow = { id: string; name: string; count: number; roles: PersonRole[] }
+export type PersonRow = { id: string; name: string; photoUrl: string | null; count: number; roles: PersonRole[] }
 
 async function api(url: string, init: RequestInit) {
   const res = await fetch(url, { ...init, headers: { "Content-Type": "application/json" } })
@@ -56,19 +58,19 @@ export function PeopleList({ people }: { people: PersonRow[] }) {
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-3xl flex-col gap-8 px-4 py-8 md:px-8">
+    <div className="mx-auto flex w-full max-w-3xl flex-col gap-8 px-4 pt-4 pb-8 md:px-8">
       <header className="flex flex-col gap-2">
-        <h1 className="type-display-lg">Pessoas</h1>
+        <h1 className="type-display-lg">Artistas</h1>
         <p className="text-muted-foreground">Diretores, fotógrafos e artistas ligados às suas referências.</p>
       </header>
 
       <div className="flex flex-col gap-3 sm:flex-row">
         <div className="relative flex-1">
           <SearchIcon className="pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden />
-          <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Filtrar pessoas" aria-label="Filtrar pessoas" className="bg-card pl-10" />
+          <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Filtrar artistas" aria-label="Filtrar artistas" className="bg-card pl-10" />
         </div>
         <form onSubmit={create} className="flex gap-2">
-          <Input value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="Nova pessoa" aria-label="Nome da nova pessoa" />
+          <Input value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="Novo artista" aria-label="Nome do novo artista" />
           <Button type="submit" size="default" disabled={!newName.trim()}>
             <PlusIcon /> Criar
           </Button>
@@ -78,15 +80,15 @@ export function PeopleList({ people }: { people: PersonRow[] }) {
       {people.length === 0 ? (
         <EmptyState
           icon={UsersIcon}
-          title="Nenhuma pessoa ainda"
-          description="Vincule pessoas às referências na revisão ou no detalhe, ou crie aqui."
+          title="Nenhum artista ainda"
+          description="Vincule artistas às referências na revisão ou no detalhe, ou crie aqui."
         />
       ) : visible.length === 0 ? (
         <p className="py-8 text-center text-muted-foreground">Ninguém com esse nome.</p>
       ) : (
-        <ul className="flex flex-col border-t">
+        <ul className="glass flex flex-col divide-y divide-glass-border overflow-hidden rounded-2xl">
           {visible.map((p) => (
-            <li key={p.id} className="flex items-center gap-4 border-b py-4">
+            <li key={p.id} className="flex items-center gap-4 px-5 py-4">
               {editing === p.id ? (
                 <form
                   className="flex flex-1 gap-2"
@@ -105,6 +107,7 @@ export function PeopleList({ people }: { people: PersonRow[] }) {
                 </form>
               ) : (
                 <>
+                  <Avatar name={p.name} url={p.photoUrl} className="size-11" />
                   <div className="flex min-w-0 flex-1 flex-col gap-1">
                     <Link href={`/people/${p.id}`} className="type-title-sm truncate hover:underline">
                       {p.name}
@@ -138,8 +141,8 @@ export function PeopleList({ people }: { people: PersonRow[] }) {
       <ConfirmDialog
         open={Boolean(deleting)}
         onOpenChange={(open) => !open && setDeleting(null)}
-        title="Excluir pessoa?"
-        description={`“${deleting?.name ?? ""}” será removida e desvinculada das referências. As referências continuam na biblioteca.`}
+        title="Excluir artista?"
+        description={`“${deleting?.name ?? ""}” será removido e desvinculado das referências. As referências continuam na biblioteca.`}
         confirmLabel="Excluir"
         onConfirm={async () => {
           if (!deleting) return

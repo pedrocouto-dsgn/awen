@@ -21,7 +21,7 @@ export async function PATCH(request: Request, ctx: RouteContext<"/api/people/[id
       .select("id, name")
       .maybeSingle()
     if (error) {
-      if (error.code === "23505") return jsonError(409, "Já existe uma pessoa com esse nome.")
+      if (error.code === "23505") return jsonError(409, "Já existe um artista com esse nome.")
       throw error
     }
     return data ? NextResponse.json(data) : notFound()

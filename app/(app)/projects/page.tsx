@@ -1,5 +1,6 @@
 import type { Metadata } from "next"
 
+import { PageBreadcrumb } from "@/components/shell/page-breadcrumb"
 import { ProjectsGrid, type ProjectCardData } from "@/features/projects/projects-grid"
 import { presignGet } from "@/lib/r2/presign"
 import { VIEW_TTL_SECONDS } from "@/lib/references/view"
@@ -47,5 +48,10 @@ export default async function ProjectsPage() {
     }),
   )
 
-  return <ProjectsGrid projects={cards} />
+  return (
+    <>
+      <PageBreadcrumb items={[{ label: "Projetos" }]} />
+      <ProjectsGrid projects={cards} />
+    </>
+  )
 }

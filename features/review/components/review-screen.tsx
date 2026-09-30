@@ -269,8 +269,11 @@ export function ReviewScreen({ items, vocab: initialVocab, queued, activeProject
   }
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
-      <section aria-label="Mídia" className="relative h-[55svh] shrink-0 lg:h-auto lg:min-h-0 lg:min-w-0 lg:flex-1">
+    <div className="flex min-h-0 flex-1 flex-col gap-3 p-3 pt-0 lg:flex-row">
+      <section
+        aria-label="Mídia"
+        className="relative h-[55svh] shrink-0 overflow-hidden rounded-2xl bg-media lg:h-auto lg:min-h-0 lg:min-w-0 lg:flex-1"
+      >
         <MediaViewer media={current.media} aspectRatio={current.aspect_ratio} title={current.title}>
           {current.media.kind === "none" ? (
             <>
@@ -299,10 +302,10 @@ export function ReviewScreen({ items, vocab: initialVocab, queued, activeProject
 
       <aside
         aria-label="Dados da referência"
-        className="flex min-h-0 w-full flex-col border-t bg-gradient-dusk lg:w-[420px] lg:border-t-0 lg:border-l"
+        className="glass flex min-h-0 w-full flex-col overflow-hidden rounded-2xl lg:w-[420px]"
       >
-        <div className="relative flex items-center gap-1 border-b px-4 py-2">
-          <div className="absolute inset-x-0 bottom-0 h-0.5 bg-card" aria-hidden>
+        <div className="relative flex items-center gap-1 border-b border-glass-border px-4 py-2">
+          <div className="absolute inset-x-0 bottom-0 h-0.5 bg-glass-hover" aria-hidden>
             <div
               className="h-full bg-gradient-accent transition-[width]"
               style={{ width: `${((index + 1) / Math.max(1, list.length)) * 100}%` }}
@@ -376,7 +379,7 @@ export function ReviewScreen({ items, vocab: initialVocab, queued, activeProject
           </div>
         </div>
 
-        <div className="flex min-h-[72px] items-center gap-2 border-t bg-background px-4 py-3">
+        <div className="flex min-h-[72px] items-center gap-2 border-t border-glass-border px-4 py-3">
           {editing ? (
             <>
               <Button variant="ghost" size="sm" onClick={resetDraft} disabled={busy}>
@@ -417,7 +420,7 @@ export function ReviewScreen({ items, vocab: initialVocab, queued, activeProject
 
 function Kbd({ children }: { children: React.ReactNode }) {
   return (
-    <kbd className="hidden border border-current/40 px-1 font-mono text-[10px] leading-4 tracking-normal opacity-70 sm:inline">
+    <kbd className="hidden rounded-[5px] border border-current/40 px-1 font-mono text-[10px] leading-4 tracking-normal opacity-70 sm:inline">
       {children}
     </kbd>
   )

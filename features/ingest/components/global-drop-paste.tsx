@@ -83,7 +83,7 @@ export function GlobalDropPaste() {
   if (!dragging) return null
   return (
     <div className="pointer-events-none fixed inset-0 z-50 flex items-center justify-center bg-overlay p-6">
-      <div className="flex flex-col items-center gap-3 border border-dashed border-ring bg-background bg-gradient-dusk px-12 py-10 text-center">
+      <div className="glass-strong flex flex-col items-center gap-3 rounded-2xl border-dashed border-ring px-12 py-10 text-center">
         <UploadIcon className="size-7 text-muted-foreground" aria-hidden />
         <p className="type-nav">Solte para adicionar</p>
       </div>

@@ -8,7 +8,7 @@
  * Awen design system (awen-DESIGN.md), expressed as tokens.
  * Graphite = structure, blue = atmosphere and action, gradients = signature.
  * Components must only use these tokens (bg-background, bg-gradient-dusk,
- * type-label, rounded-input...). Never inline hex, gradients or radii.
+ * glass, type-label, rounded-input...). Never inline hex, gradients or radii.
  */
 
 @theme inline {
@@ -39,6 +39,7 @@
   --color-info: var(--info);
   --color-border: var(--border);
   --color-border-strong: var(--border-strong);
+  --color-glass-border: var(--glass-border);
   --color-input: var(--input);
   --color-ring: var(--ring);
   --color-media: var(--media);
@@ -60,14 +61,14 @@
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
 
-  /* Shapes: sharp by default; specific radii for inputs, popovers, modals. */
-  --radius-sm: var(--radius);
-  --radius-md: var(--radius);
-  --radius-lg: var(--radius);
-  --radius-xl: var(--radius);
-  --radius-2xl: var(--radius);
-  --radius-3xl: var(--radius);
-  --radius-4xl: var(--radius);
+  /* Shapes: soft corners on an 8-16px ladder (pills only for badges and avatars). */
+  --radius-sm: 8px;
+  --radius-md: 10px;
+  --radius-lg: 12px;
+  --radius-xl: 14px;
+  --radius-2xl: 16px;
+  --radius-3xl: 16px;
+  --radius-4xl: 16px;
   --radius-tag: var(--radius-tag-value);
   --radius-input: var(--radius-input-value);
   --radius-popover: var(--radius-popover-value);
@@ -81,12 +82,21 @@
   --font-app-sans: var(--font-inter), -apple-system, system-ui, sans-serif;
   --font-app-mono: var(--font-geist-mono), ui-monospace, monospace;
 
-  --radius: 0px;
-  --radius-tag-value: 2px;
-  --radius-input-value: 4px;
-  --radius-popover-value: 6px;
-  --radius-modal-value: 12px;
+  --radius: 12px;
+  --radius-tag-value: 5px; /* tiny controls: checkbox */
+  --radius-input-value: 10px;
+  --radius-popover-value: 12px;
+  --radius-modal-value: 16px;
   --shadow-overlay-value: 0 8px 24px rgba(0, 0, 0, 0.18);
+
+  /* Glass: translucent graphite over the ambient canvas. */
+  --glass: rgba(255, 255, 255, 0.55);
+  --glass-strong: rgba(248, 250, 251, 0.86);
+  --glass-panel: rgba(246, 248, 249, 0.98);
+  --glass-hover: rgba(17, 17, 17, 0.05);
+  --glass-border: rgba(17, 17, 17, 0.08);
+  --glass-inset: inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  --glass-shadow: 0 8px 32px rgba(30, 58, 82, 0.1);
 
   --background: #f4f6f7; /* canvas-light */
   --foreground: #111111; /* ink-on-light */
@@ -120,6 +130,10 @@
   --scrim-foreground: #cadcea;
 
   --gradient-canvas: linear-gradient(180deg, #cadcea 0%, #f4f6f7 60%);
+  --gradient-ambient:
+    radial-gradient(70% 55% at 10% -5%, rgba(142, 176, 201, 0.55) 0%, rgba(244, 246, 247, 0) 65%),
+    radial-gradient(55% 45% at 95% 0%, rgba(202, 220, 234, 0.9) 0%, rgba(244, 246, 247, 0) 70%),
+    radial-gradient(60% 50% at 65% 105%, rgba(180, 199, 204, 0.5) 0%, rgba(244, 246, 247, 0) 70%);
   --gradient-glow: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(142, 176, 201, 0.35) 0%, rgba(244, 246, 247, 0) 70%);
   --gradient-card: linear-gradient(160deg, #e6ecee 0%, #f4f6f7 100%);
   --gradient-dusk: linear-gradient(135deg, #cadcea 0%, #e6ecee 100%);
@@ -127,6 +141,7 @@
   --gradient-steel: linear-gradient(135deg, #b4c7cc 0%, #cadcea 100%);
   --gradient-scrim: linear-gradient(180deg, rgba(17, 17, 17, 0) 0%, rgba(17, 17, 17, 0.85) 100%);
   --gradient-hairline: linear-gradient(90deg, rgba(75, 112, 141, 0) 0%, #4b708d 50%, rgba(75, 112, 141, 0) 100%);
+  --gradient-nav-active: linear-gradient(90deg, rgba(17, 17, 17, 0.02) 0%, rgba(17, 17, 17, 0.08) 100%);
 
   --chart-1: #1e3a52;
   --chart-2: #4b708d;
@@ -146,6 +161,14 @@
 /* ---------- Dark (the primary Awen look) ---------- */
 .dark {
   --shadow-overlay-value: 0 8px 24px rgba(0, 0, 0, 0.45);
+
+  --glass: rgba(34, 36, 38, 0.5);
+  --glass-strong: rgba(30, 32, 35, 0.84);
+  --glass-panel: rgba(26, 28, 31, 0.97);
+  --glass-hover: rgba(202, 220, 234, 0.06);
+  --glass-border: rgba(202, 220, 234, 0.1);
+  --glass-inset: inset 0 1px 0 rgba(202, 220, 234, 0.06);
+  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
 
   --background: #111111; /* Air Black canvas, never pure black */
   --foreground: #cadcea; /* Ink / Frost */
@@ -179,6 +202,10 @@
   --scrim-foreground: #cadcea;
 
   --gradient-canvas: linear-gradient(180deg, #1e3a52 0%, #111111 60%);
+  --gradient-ambient:
+    radial-gradient(70% 55% at 10% -5%, rgba(75, 112, 141, 0.42) 0%, rgba(17, 17, 17, 0) 65%),
+    radial-gradient(55% 45% at 95% 0%, rgba(30, 58, 82, 0.6) 0%, rgba(17, 17, 17, 0) 70%),
+    radial-gradient(60% 50% at 65% 105%, rgba(47, 85, 116, 0.28) 0%, rgba(17, 17, 17, 0) 70%);
   --gradient-glow: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(75, 112, 141, 0.45) 0%, rgba(17, 17, 17, 0) 70%);
   --gradient-card: linear-gradient(160deg, #3a3a3a 0%, #1a1a1a 100%);
   --gradient-dusk: linear-gradient(135deg, #1e3a52 0%, #3a3a3a 100%);
@@ -186,6 +213,7 @@
   --gradient-steel: linear-gradient(135deg, #1e3a52 0%, #2f5574 100%);
   --gradient-scrim: linear-gradient(180deg, rgba(17, 17, 17, 0) 0%, rgba(17, 17, 17, 0.85) 100%);
   --gradient-hairline: linear-gradient(90deg, rgba(75, 112, 141, 0) 0%, #4b708d 50%, rgba(75, 112, 141, 0) 100%);
+  --gradient-nav-active: linear-gradient(90deg, rgba(202, 220, 234, 0.02) 0%, rgba(202, 220, 234, 0.13) 100%);
 
   --chart-1: #cadcea;
   --chart-2: #8eb0c9;
@@ -226,6 +254,40 @@
 }
 @utility bg-gradient-hairline {
   background-image: var(--gradient-hairline);
+}
+/* Active sidebar item: a glass pill that brightens to the right. */
+@utility bg-gradient-nav-active {
+  background-image: var(--gradient-nav-active);
+}
+
+/* ---------- Glass surfaces ---------- */
+/* Panels, cards, sidebar, top bar. Needs the ambient canvas behind it. */
+@utility glass {
+  background-color: var(--glass);
+  -webkit-backdrop-filter: blur(24px) saturate(140%);
+  backdrop-filter: blur(24px) saturate(140%);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-inset), var(--glass-shadow);
+}
+/* Floating layers (popovers, menus, dialogs, sheets): more opaque for legibility. */
+@utility glass-strong {
+  background-color: var(--glass-strong);
+  -webkit-backdrop-filter: blur(32px) saturate(150%);
+  backdrop-filter: blur(32px) saturate(150%);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-inset), var(--shadow-overlay-value);
+}
+/*
+ * Large sliding panels (sheets): the glass look without backdrop-filter. Blurring a
+ * full-height panel on every animation frame over the image feed makes it lag.
+ */
+@utility glass-panel {
+  background-color: var(--glass-panel);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-inset), var(--shadow-overlay-value);
+}
+@utility bg-glass-hover {
+  background-color: var(--glass-hover);
 }
 
 /* ---------- Typography tokens (Inter, modest weights) ---------- */
@@ -306,14 +368,19 @@
   }
   body {
     @apply bg-background text-foreground;
-    /* The top of every page is lit by the canvas gradient. */
-    background-image: var(--gradient-canvas);
-    background-repeat: no-repeat;
-    background-size: 100% 100svh;
     font-size: 0.875rem;
     line-height: 1.5;
   }
   /* 2px focus ring, 2px offset, on every interactive element. */
+  /* Ambient canvas: fixed blue glows the glass surfaces blur over. */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background-image: var(--gradient-ambient);
+  }
   :focus-visible {
     outline: 2px solid var(--ring);
     outline-offset: 2px;

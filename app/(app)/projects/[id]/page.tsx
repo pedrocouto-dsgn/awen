@@ -4,6 +4,7 @@ import { notFound } from "next/navigation"
 import { z } from "zod"
 
 import { EmptyState } from "@/components/shell/empty-state"
+import { PageBreadcrumb } from "@/components/shell/page-breadcrumb"
 import { LibraryGrid } from "@/features/library/components/library-grid"
 import { ProjectHeader } from "@/features/projects/project-header"
 import { filtersToParams, parseFilters } from "@/lib/library/filters"
@@ -34,28 +35,31 @@ export default async function ProjectPage({ params }: PageProps<"/projects/[id]"
   const result = await searchLibrary(supabase, filters)
 
   return (
-    <div className="flex flex-col gap-8 px-4 py-8 md:px-8">
-      <ProjectHeader project={project} total={result.total} />
-      {result.cards.length > 0 ? (
-        <LibraryGrid
-          key={project.id}
-          initialCards={result.cards}
-          initialNextOffset={result.nextOffset}
-          total={result.total}
-          query={filtersToParams(filters).toString()}
-          projectId={project.id}
-        />
-      ) : (
-        <EmptyState
-          icon={FolderOpenIcon}
-          title="Projeto vazio"
-          description={
-            project.is_active
-              ? "Na revisão ou no detalhe de uma referência, aperte P para adicioná-la a este projeto."
-              : "Adicione referências pela seção Projetos no detalhe ou na revisão."
-          }
-        />
-      )}
-    </div>
+    <>
+      <PageBreadcrumb items={[{ label: "Projetos", href: "/projects" }, { label: project.name }]} />
+      <div className="flex flex-col gap-8 px-4 pt-4 pb-8 md:px-8">
+        <ProjectHeader project={project} total={result.total} />
+        {result.cards.length > 0 ? (
+          <LibraryGrid
+            key={project.id}
+            initialCards={result.cards}
+            initialNextOffset={result.nextOffset}
+            total={result.total}
+            query={filtersToParams(filters).toString()}
+            projectId={project.id}
+          />
+        ) : (
+          <EmptyState
+            icon={FolderOpenIcon}
+            title="Projeto vazio"
+            description={
+              project.is_active
+                ? "Na revisão ou no detalhe de uma referência, aperte P para adicioná-la a este projeto."
+                : "Adicione referências pela seção Projetos no detalhe ou na revisão."
+            }
+          />
+        )}
+      </div>
+    </>
   )
 }

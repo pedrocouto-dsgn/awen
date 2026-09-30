@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 import Link from "next/link"
 
+import { PageBreadcrumb } from "@/components/shell/page-breadcrumb"
 import { FailedList } from "@/features/review/components/failed-list"
 import { ReviewScreen } from "@/features/review/components/review-screen"
 import { getFailedItems, getReviewItems } from "@/features/review/data"
@@ -24,10 +25,13 @@ export default async function ReviewPage({ searchParams }: PageProps<"/review">)
   ])
 
   return (
-    // On large screens the review fills exactly the viewport under the header (no page scroll).
-    <div className="flex flex-1 flex-col lg:h-[calc(100svh-4rem)] lg:flex-none lg:overflow-hidden">
+    // On large screens the review fills exactly the viewport (no page scroll).
+    <div className="flex flex-1 flex-col lg:h-svh lg:flex-none lg:overflow-hidden">
+      <PageBreadcrumb
+        items={tab === "failed" ? [{ label: "Revisão", href: "/review" }, { label: "Falharam" }] : [{ label: "Revisão" }]}
+      />
       {stats.failed > 0 || tab === "failed" ? (
-        <nav aria-label="Seções da revisão" className="flex gap-1 border-b px-4 py-1.5 md:px-6">
+        <nav aria-label="Seções da revisão" className="flex gap-1 px-3 pb-3">
           <TabLink href="/review" active={tab === "review"}>
             Para revisar <Count n={stats.toReview} />
           </TabLink>
@@ -56,8 +60,8 @@ function TabLink({ href, active, children }: { href: string; active: boolean; ch
       href={href}
       aria-current={active ? "page" : undefined}
       className={cn(
-        "type-nav flex h-9 items-center px-4 text-muted-foreground hover:text-foreground",
-        active && "bg-gradient-steel text-foreground",
+        "type-nav flex h-9 items-center rounded-xl border border-transparent px-4 text-muted-foreground transition-colors hover:bg-glass-hover hover:text-foreground",
+        active && "border-glass-border bg-gradient-steel text-foreground hover:bg-gradient-steel",
       )}
     >
       {children}

@@ -1,15 +1,13 @@
 "use client"
 
-import { Loader2Icon, PaletteIcon, SearchIcon, SlidersHorizontalIcon, XIcon } from "lucide-react"
+import { Loader2Icon, SearchIcon, SlidersHorizontalIcon, XIcon } from "lucide-react"
 import { usePathname, useRouter } from "next/navigation"
 import { useEffect, useRef, useState, useTransition } from "react"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Separator } from "@/components/ui/separator"
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import {
   ASPECT_BUCKETS,
@@ -77,7 +75,7 @@ export function LibraryToolbar({ filters, options, total }: { filters: LibraryFi
     ...(filters.tipo ? [{ label: filters.tipo === "image" ? "Imagens" : "Vídeos", clear: () => apply({ tipo: undefined }) }] : []),
     ...(filters.desde ? [{ label: SINCE_OPTIONS[filters.desde].label, clear: () => apply({ desde: undefined }) }] : []),
     ...(filters.nota ? [{ label: `${filters.nota}★ ou mais`, clear: () => apply({ nota: undefined }) }] : []),
-    ...(filters.pessoa ? [{ label: personName ?? "Pessoa", clear: () => apply({ pessoa: undefined }) }] : []),
+    ...(filters.pessoa ? [{ label: personName ?? "Artista", clear: () => apply({ pessoa: undefined }) }] : []),
     ...(filters.projeto ? [{ label: projectName ?? "Projeto", clear: () => apply({ projeto: undefined }) }] : []),
   ]
 
@@ -96,13 +94,13 @@ export function LibraryToolbar({ filters, options, total }: { filters: LibraryFi
           />
         </div>
 
-        <ColorFilter value={filters.cor} onChange={(cor) => apply({ cor })} />
-
         <Sheet>
           <SheetTrigger asChild>
             <Button variant="outline" size="sm">
               <SlidersHorizontalIcon /> Filtros
-              {activeCount > 0 ? <Badge className="ml-0.5 h-4 min-w-4 px-1 tabular-nums">{activeCount}</Badge> : null}
+              {activeCount + (filters.cor ? 1 : 0) > 0 ? (
+                <Badge className="ml-0.5 h-4 min-w-4 px-1 tabular-nums">{activeCount + (filters.cor ? 1 : 0)}</Badge>
+              ) : null}
             </Button>
           </SheetTrigger>
           <SheetContent side="right" className="w-full overflow-y-auto sm:max-w-sm">
@@ -120,6 +118,9 @@ export function LibraryToolbar({ filters, options, total }: { filters: LibraryFi
                   value={filters.tipo ? [filters.tipo] : []}
                   onToggle={(v) => apply({ tipo: filters.tipo === v ? undefined : (v as "image" | "video") })}
                 />
+              </Group>
+              <Group label="Cor">
+                <ColorFilter value={filters.cor} onChange={(cor) => apply({ cor })} />
               </Group>
               <Group label="Plano">
                 <ChoiceChips options={options.shotTypes.map((t) => [t, t])} value={filters.plano} onToggle={(v) => toggle("plano", v)} />
@@ -157,11 +158,11 @@ export function LibraryToolbar({ filters, options, total }: { filters: LibraryFi
                 />
               </Group>
               {options.people.length > 0 ? (
-                <Group label="Pessoa">
+                <Group label="Artista">
                   <EntitySelect
                     items={options.people}
                     value={filters.pessoa}
-                    placeholder="Qualquer pessoa"
+                    placeholder="Qualquer artista"
                     onChange={(pessoa) => apply({ pessoa })}
                   />
                 </Group>
@@ -256,7 +257,7 @@ function ChoiceChips({
             aria-pressed={on}
             onClick={() => onToggle(key)}
             className={cn(
-              "type-label border px-3 py-1.5 transition-colors",
+              "type-label rounded-sm border px-3 py-1.5 transition-colors",
               on
                 ? "border-transparent bg-gradient-steel text-foreground"
                 : "border-border-strong text-muted-foreground hover:text-foreground",
@@ -298,77 +299,47 @@ function EntitySelect({
   )
 }
 
+/** Inside the Filtros sheet: presets, a custom picker and "clear". Matches palette colours. */
 function ColorFilter({ value, onChange }: { value?: string; onChange: (hex: string | undefined) => void }) {
-  const [open, setOpen] = useState(false)
   const [draft, setDraft] = useState(value ? `#${value}` : "#b4c7cc")
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <Button variant="outline" size="sm" aria-label="Buscar por cor">
-          {value ? (
-            <span className="size-3.5 rounded-full border" style={{ backgroundColor: `#${value}` }} aria-hidden />
-          ) : (
-            <PaletteIcon />
-          )}
-          <span className="hidden sm:inline">Cor</span>
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent align="start" className="flex w-64 flex-col gap-3">
-        <p className="text-xs text-muted-foreground">Mostra as referências com uma cor da paleta parecida.</p>
-        <div className="grid grid-cols-6 gap-1.5">
-          {COLOR_PRESETS.map((hex) => (
-            <button
-              key={hex}
-              type="button"
-              aria-label={`#${hex}`}
-              aria-pressed={value === hex}
-              onClick={() => {
-                onChange(hex)
-                setOpen(false)
-              }}
-              className={cn(
-                "aspect-square border border-border-strong",
-                value === hex && "ring-2 ring-ring ring-offset-2 ring-offset-popover",
-              )}
-              style={{ backgroundColor: `#${hex}` }}
-            />
-          ))}
-        </div>
-        <Separator />
-        <div className="flex items-center gap-2">
-          <input
-            type="color"
-            value={draft}
-            onChange={(e) => setDraft(e.target.value)}
-            aria-label="Escolher cor"
-            className="h-9 w-11 cursor-pointer border border-border-strong bg-transparent"
+    <div className="flex flex-col gap-3">
+      <p className="text-xs text-muted-foreground">Mostra as referências com uma cor da paleta parecida.</p>
+      <div className="grid grid-cols-6 gap-1.5">
+        {COLOR_PRESETS.map((hex) => (
+          <button
+            key={hex}
+            type="button"
+            aria-label={`#${hex}`}
+            aria-pressed={value === hex}
+            onClick={() => onChange(value === hex ? undefined : hex)}
+            className={cn(
+              "aspect-square rounded-sm border border-border-strong",
+              value === hex && "ring-2 ring-ring ring-offset-2 ring-offset-popover",
+            )}
+            style={{ backgroundColor: `#${hex}` }}
           />
-          <span className="font-mono text-xs">{draft}</span>
-          <Button
-            size="sm"
-            className="ml-auto"
-            onClick={() => {
-              onChange(draft.slice(1).toLowerCase())
-              setOpen(false)
-            }}
-          >
-            Aplicar
-          </Button>
-        </div>
+        ))}
+      </div>
+      <div className="flex items-center gap-2">
+        <input
+          type="color"
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          aria-label="Escolher outra cor"
+          className="h-9 w-11 cursor-pointer rounded-sm border border-border-strong bg-transparent"
+        />
+        <span className="font-mono text-xs">{draft}</span>
+        <Button size="sm" variant="outline" className="ml-auto" onClick={() => onChange(draft.slice(1).toLowerCase())}>
+          Aplicar
+        </Button>
         {value ? (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => {
-              onChange(undefined)
-              setOpen(false)
-            }}
-          >
-            Limpar cor
+          <Button size="sm" variant="ghost" onClick={() => onChange(undefined)}>
+            Limpar
           </Button>
         ) : null}
-      </PopoverContent>
-    </Popover>
+      </div>
+    </div>
   )
 }

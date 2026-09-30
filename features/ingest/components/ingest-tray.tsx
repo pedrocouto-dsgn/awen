@@ -42,9 +42,9 @@ export function IngestTray() {
   return (
     <section
       aria-label="Envios"
-      className="fixed right-4 bottom-4 z-40 w-[min(22rem,calc(100vw-2rem))] overflow-hidden border border-border-strong bg-popover bg-gradient-card text-popover-foreground shadow-overlay"
+      className="fixed right-4 bottom-4 z-40 w-[min(22rem,calc(100vw-2rem))] overflow-hidden rounded-2xl glass-strong text-popover-foreground shadow-overlay"
     >
-      <header className="flex items-center gap-2 border-b px-3 py-2">
+      <header className="flex items-center gap-2 border-b border-glass-border px-3 py-2">
         <p className="flex-1 text-sm font-medium" aria-live="polite">
           {active > 0 ? `Enviando ${active} de ${items.length}` : `${items.length} ${items.length === 1 ? "item" : "itens"}`}
         </p>
@@ -63,7 +63,7 @@ export function IngestTray() {
         </Button>
       </header>
       {collapsed ? null : (
-        <ul className="max-h-80 divide-y overflow-y-auto">
+        <ul className="max-h-80 divide-y divide-glass-border overflow-y-auto">
           {items.map((item) => (
             <TrayRow key={item.id} item={item} />
           ))}
@@ -80,7 +80,7 @@ function TrayRow({ item }: { item: IngestItem }) {
 
   return (
     <li className="flex gap-3 px-3 py-2.5">
-      <div className="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-md bg-media text-media-foreground">
+      <div className="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-media text-media-foreground">
         {item.previewUrl ? (
           // eslint-disable-next-line @next/next/no-img-element -- local object URL preview
           <img src={item.previewUrl} alt="" className="size-full object-cover" />
