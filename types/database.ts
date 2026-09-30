@@ -224,6 +224,11 @@ export type Database = {
       }
       set_active_project: { Args: { p_project_id: string; p_active?: boolean }; Returns: undefined }
       ensure_vocabularies: { Args: Record<PropertyKey, never>; Returns: number }
+      rename_vocab_term: { Args: { p_id: string; p_term: string }; Returns: VocabularyRow }
+      reorder_vocabulary: {
+        Args: { p_category: Database["public"]["Enums"]["vocab_category"]; p_ids: string[] }
+        Returns: undefined
+      }
     }
     Enums: {
       reference_type: "image" | "video"

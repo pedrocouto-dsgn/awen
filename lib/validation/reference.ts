@@ -46,3 +46,16 @@ export const vocabTermSchema = z.object({
     .max(60, "Termo longo demais.")
     .transform((v) => v.replace(/\s+/g, " ")),
 })
+
+export const vocabTermUpdateSchema = z
+  .object({
+    term: vocabTermSchema.shape.term,
+    archived: z.boolean(),
+  })
+  .partial()
+  .refine((v) => Object.keys(v).length > 0, { message: "Nada para atualizar." })
+
+export const vocabOrderSchema = z.object({
+  category: vocabTermSchema.shape.category,
+  ids: z.array(z.uuid()).min(1).max(500),
+})
