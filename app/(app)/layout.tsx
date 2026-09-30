@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation"
 
 import { AppHeader } from "@/components/shell/app-header"
+import { AppSidebar } from "@/components/shell/app-sidebar"
 import { AnalysisProvider } from "@/features/analysis/analysis-provider"
 import { AnalysisIndicator } from "@/features/analysis/components/analysis-indicator"
 import { AddReferenceDialog } from "@/features/ingest/components/add-reference-dialog"
@@ -21,17 +22,20 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
   return (
     <AnalysisProvider initialStats={stats}>
       <IngestProvider>
-        <div className="flex min-h-svh flex-1 flex-col">
-          <AppHeader
-            email={email}
-            actions={
-              <>
-                <AnalysisIndicator />
-                <AddReferenceDialog />
-              </>
-            }
-          />
-          <main className="flex flex-1 flex-col">{children}</main>
+        <div className="flex min-h-svh flex-1">
+          <AppSidebar />
+          <div className="flex min-w-0 flex-1 flex-col">
+            <AppHeader
+              email={email}
+              actions={
+                <>
+                  <AnalysisIndicator />
+                  <AddReferenceDialog />
+                </>
+              }
+            />
+            <main className="flex flex-1 flex-col">{children}</main>
+          </div>
         </div>
         <GlobalDropPaste />
         <IngestTray />

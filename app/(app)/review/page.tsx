@@ -24,7 +24,7 @@ export default async function ReviewPage({ searchParams }: PageProps<"/review">)
 
   return (
     // On large screens the review fills exactly the viewport under the header (no page scroll).
-    <div className="flex flex-1 flex-col lg:h-[calc(100svh-3.5rem)] lg:flex-none lg:overflow-hidden">
+    <div className="flex flex-1 flex-col lg:h-[calc(100svh-4rem)] lg:flex-none lg:overflow-hidden">
       {stats.failed > 0 || tab === "failed" ? (
         <nav aria-label="Seções da revisão" className="flex gap-1 border-b px-4 py-1.5 md:px-6">
           <TabLink href="/review" active={tab === "review"}>
@@ -50,8 +50,8 @@ function TabLink({ href, active, children }: { href: string; active: boolean; ch
       href={href}
       aria-current={active ? "page" : undefined}
       className={cn(
-        "rounded-md px-3 py-1 text-sm text-muted-foreground hover:text-foreground",
-        active && "bg-accent text-accent-foreground",
+        "type-nav flex h-9 items-center px-4 text-muted-foreground hover:text-foreground",
+        active && "bg-gradient-steel text-foreground",
       )}
     >
       {children}

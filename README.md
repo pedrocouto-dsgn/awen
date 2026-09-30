@@ -6,6 +6,8 @@ Stack: Next.js 16 (App Router) · TypeScript · Tailwind v4 · shadcn/ui · Supa
 
 > Setup instructions are filled in milestone by milestone. See the sections below.
 
+**Design system.** The visual language lives in `awen-DESIGN.md` and is implemented as tokens in `app/globals.css`: colors, 8 gradients (`bg-gradient-*`), typography (`type-*`), radii (`rounded-input`, `rounded-popover`, `rounded-modal`) and the overlay shadow. Components only use these tokens. Dark is the default theme; the light variant is derived from the same doc.
+
 ## Local development
 
 ```bash

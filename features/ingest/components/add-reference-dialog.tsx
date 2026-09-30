@@ -32,7 +32,7 @@ export function AddReferenceDialog() {
   return (
     <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
       <DialogTrigger asChild>
-        <Button size="sm">
+        <Button variant="accent" size="sm">
           <PlusIcon /> <span className="hidden sm:inline">Adicionar</span>
         </Button>
       </DialogTrigger>
@@ -63,9 +63,9 @@ export function AddReferenceDialog() {
             }
           }}
           className={cn(
-            "flex flex-col items-center justify-center gap-2 rounded-lg border border-dashed px-6 py-10 text-center transition-colors",
+            "flex flex-col items-center justify-center gap-2 border border-dashed border-border-strong px-6 py-12 text-center transition-colors",
             "text-muted-foreground hover:border-ring hover:text-foreground focus-visible:outline-2",
-            over && "border-ring bg-accent text-foreground",
+            over && "border-ring bg-gradient-steel text-foreground",
           )}
         >
           <UploadIcon className="size-6" aria-hidden />

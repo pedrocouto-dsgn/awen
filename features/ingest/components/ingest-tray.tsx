@@ -42,7 +42,7 @@ export function IngestTray() {
   return (
     <section
       aria-label="Envios"
-      className="fixed right-4 bottom-4 z-40 w-[min(22rem,calc(100vw-2rem))] overflow-hidden rounded-xl border bg-popover text-popover-foreground shadow-lg"
+      className="fixed right-4 bottom-4 z-40 w-[min(22rem,calc(100vw-2rem))] overflow-hidden border border-border-strong bg-popover bg-gradient-card text-popover-foreground shadow-overlay"
     >
       <header className="flex items-center gap-2 border-b px-3 py-2">
         <p className="flex-1 text-sm font-medium" aria-live="polite">
@@ -109,8 +109,8 @@ function TrayRow({ item }: { item: IngestItem }) {
           </span>
         </p>
         {item.status === "uploading" ? (
-          <div className="h-1 overflow-hidden rounded-full bg-muted" role="progressbar" aria-valuenow={item.progress} aria-valuemin={0} aria-valuemax={100}>
-            <div className="h-full bg-primary transition-[width]" style={{ width: `${item.progress}%` }} />
+          <div className="h-0.5 overflow-hidden bg-background" role="progressbar" aria-valuenow={item.progress} aria-valuemin={0} aria-valuemax={100}>
+            <div className="h-full bg-gradient-accent transition-[width]" style={{ width: `${item.progress}%` }} />
           </div>
         ) : null}
         {item.duplicates.length > 0 ? (

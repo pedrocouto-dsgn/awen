@@ -67,8 +67,10 @@ export function VocabChips({
             aria-pressed={on}
             onClick={() => onChange(on ? value.filter((v) => v !== t.term) : [...value, t.term])}
             className={cn(
-              "rounded-full border px-2.5 py-0.5 text-xs transition-colors focus-visible:outline-2",
-              on ? "border-primary bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground",
+              "type-label border px-3 py-1.5 transition-colors",
+              on
+                ? "border-transparent bg-gradient-steel text-foreground"
+                : "border-border-strong text-muted-foreground hover:text-foreground",
             )}
           >
             {t.term}
@@ -156,7 +158,7 @@ export function RatingInput({
             role="radio"
             aria-checked={value === n}
             aria-label={`${n} ${n === 1 ? "estrela" : "estrelas"}`}
-            className="rounded-sm p-0.5 focus-visible:outline-2"
+            className="p-0.5"
             onClick={() => onChange?.(value === n ? null : n)}
           >
             {star}

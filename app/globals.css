@@ -4,147 +4,334 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/*
+ * Awen design system (awen-DESIGN.md), expressed as tokens.
+ * Graphite = structure, blue = atmosphere and action, gradients = signature.
+ * Components must only use these tokens (bg-background, bg-gradient-dusk,
+ * type-label, rounded-input...). Never inline hex, gradients or radii.
+ */
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-app-sans);
   --font-mono: var(--font-app-mono);
-  --font-heading: var(--font-app-heading);
+  --font-heading: var(--font-app-sans);
+
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-active: var(--primary-active);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-link: var(--link);
+  --color-destructive: var(--destructive);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-info: var(--info);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
   --color-media: var(--media);
   --color-media-foreground: var(--media-foreground);
   --color-overlay: var(--overlay);
-  --color-sidebar-ring: var(--sidebar-ring);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar: var(--sidebar);
-  --color-chart-5: var(--chart-5);
-  --color-chart-4: var(--chart-4);
-  --color-chart-3: var(--chart-3);
-  --color-chart-2: var(--chart-2);
+  --color-scrim-foreground: var(--scrim-foreground);
+
   --color-chart-1: var(--chart-1);
-  --color-ring: var(--ring);
-  --color-input: var(--input);
-  --color-border: var(--border);
-  --color-destructive: var(--destructive);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-accent: var(--accent);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-muted: var(--muted);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-secondary: var(--secondary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-primary: var(--primary);
-  --color-popover-foreground: var(--popover-foreground);
-  --color-popover: var(--popover);
-  --color-card-foreground: var(--card-foreground);
-  --color-card: var(--card);
-  --radius-sm: calc(var(--radius) * 0.6);
-  --radius-md: calc(var(--radius) * 0.8);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  /* Shapes: sharp by default; specific radii for inputs, popovers, modals. */
+  --radius-sm: var(--radius);
+  --radius-md: var(--radius);
   --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) * 1.4);
-  --radius-2xl: calc(var(--radius) * 1.8);
-  --radius-3xl: calc(var(--radius) * 2.2);
-  --radius-4xl: calc(var(--radius) * 2.6);
+  --radius-xl: var(--radius);
+  --radius-2xl: var(--radius);
+  --radius-3xl: var(--radius);
+  --radius-4xl: var(--radius);
+  --radius-tag: var(--radius-tag-value);
+  --radius-input: var(--radius-input-value);
+  --radius-popover: var(--radius-popover-value);
+  --radius-modal: var(--radius-modal-value);
+
+  --shadow-overlay: var(--shadow-overlay-value);
 }
 
-/*
- * Awen theme tokens. The design system replaces the values below; components
- * must only use token classes (bg-background, text-muted-foreground, rounded-lg...).
- */
+/* ---------- Light variant (derived, per the design doc) ---------- */
 :root {
-  --font-app-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
-  --font-app-heading: var(--font-app-sans);
+  --font-app-sans: var(--font-inter), -apple-system, system-ui, sans-serif;
   --font-app-mono: var(--font-geist-mono), ui-monospace, monospace;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --radius: 0.625rem;
-  /* Media stage (letterbox behind images/video) and scrim over media */
-  --media: oklch(0.96 0 0);
-  --media-foreground: oklch(0.145 0 0);
-  --overlay: oklch(0 0 0 / 55%);
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+
+  --radius: 0px;
+  --radius-tag-value: 2px;
+  --radius-input-value: 4px;
+  --radius-popover-value: 6px;
+  --radius-modal-value: 12px;
+  --shadow-overlay-value: 0 8px 24px rgba(0, 0, 0, 0.18);
+
+  --background: #f4f6f7; /* canvas-light */
+  --foreground: #111111; /* ink-on-light */
+  --card: #e6ecee; /* surface-light */
+  --card-foreground: #111111;
+  --popover: #f4f6f7;
+  --popover-foreground: #111111;
+  --primary: #111111; /* primary on light: Air Black fill, Frost text */
+  --primary-foreground: #cadcea;
+  --primary-hover: #3a3a3a;
+  --primary-active: #4d4d4d;
+  --secondary: #e6ecee;
+  --secondary-foreground: #111111;
+  --muted: #e6ecee;
+  --muted-foreground: #4d4d4d; /* body-on-light 7.8:1 */
+  --accent: #e6ecee;
+  --accent-foreground: #111111;
+  --link: #1e3a52;
+  --destructive: #b3404a; /* danger darkened for light canvas (derived) */
+  --success: #2e7d5b;
+  --warning: #8a5d0f;
+  --info: #1e3a52;
+  --border: #b4c7cc; /* hairline-on-light */
+  --border-strong: #6e7375;
+  --input: #6e7375;
+  --ring: #1e3a52;
+
+  --media: #e6ecee;
+  --media-foreground: #4d4d4d;
+  --overlay: rgba(17, 17, 17, 0.85); /* scrim, always dark */
+  --scrim-foreground: #cadcea;
+
+  --gradient-canvas: linear-gradient(180deg, #cadcea 0%, #f4f6f7 60%);
+  --gradient-glow: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(142, 176, 201, 0.35) 0%, rgba(244, 246, 247, 0) 70%);
+  --gradient-card: linear-gradient(160deg, #e6ecee 0%, #f4f6f7 100%);
+  --gradient-dusk: linear-gradient(135deg, #cadcea 0%, #e6ecee 100%);
+  --gradient-accent: linear-gradient(135deg, #111111 0%, #3a3a3a 100%);
+  --gradient-steel: linear-gradient(135deg, #b4c7cc 0%, #cadcea 100%);
+  --gradient-scrim: linear-gradient(180deg, rgba(17, 17, 17, 0) 0%, rgba(17, 17, 17, 0.85) 100%);
+  --gradient-hairline: linear-gradient(90deg, rgba(75, 112, 141, 0) 0%, #4b708d 50%, rgba(75, 112, 141, 0) 100%);
+
+  --chart-1: #1e3a52;
+  --chart-2: #4b708d;
+  --chart-3: #8eb0c9;
+  --chart-4: #b4c7cc;
+  --chart-5: #4d4d4d;
+  --sidebar: #f4f6f7;
+  --sidebar-foreground: #4d4d4d;
+  --sidebar-primary: #111111;
+  --sidebar-primary-foreground: #cadcea;
+  --sidebar-accent: #e6ecee;
+  --sidebar-accent-foreground: #111111;
+  --sidebar-border: #b4c7cc;
+  --sidebar-ring: #1e3a52;
 }
 
+/* ---------- Dark (the primary Awen look) ---------- */
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
-  --media: oklch(0.1 0 0);
-  --media-foreground: oklch(0.985 0 0);
-  --overlay: oklch(0 0 0 / 65%);
+  --shadow-overlay-value: 0 8px 24px rgba(0, 0, 0, 0.45);
+
+  --background: #111111; /* Air Black canvas, never pure black */
+  --foreground: #cadcea; /* Ink / Frost */
+  --card: #3a3a3a; /* Black Olive */
+  --card-foreground: #cadcea;
+  --popover: #3a3a3a;
+  --popover-foreground: #cadcea;
+  --primary: #cadcea; /* Frost: the single action color */
+  --primary-foreground: #111111;
+  --primary-hover: #e3edf5;
+  --primary-active: #b4c7cc;
+  --secondary: #3a3a3a;
+  --secondary-foreground: #cadcea;
+  --muted: #3a3a3a;
+  --muted-foreground: #b7babb; /* Body / Gray X11 */
+  --accent: #3a3a3a;
+  --accent-foreground: #cadcea;
+  --link: #b4c7cc; /* Body Accent / Pastel Blue */
+  --destructive: #e5737d;
+  --success: #6fbf9f;
+  --warning: #d9a441;
+  --info: #8eb0c9;
+  --border: #3a3a3a; /* hairline */
+  --border-strong: #4d4d4d; /* hairline-strong */
+  --input: #4d4d4d;
+  --ring: #cadcea;
+
+  --media: #111111;
+  --media-foreground: #b7babb;
+  --overlay: rgba(17, 17, 17, 0.85);
+  --scrim-foreground: #cadcea;
+
+  --gradient-canvas: linear-gradient(180deg, #1e3a52 0%, #111111 60%);
+  --gradient-glow: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(75, 112, 141, 0.45) 0%, rgba(17, 17, 17, 0) 70%);
+  --gradient-card: linear-gradient(160deg, #3a3a3a 0%, #1a1a1a 100%);
+  --gradient-dusk: linear-gradient(135deg, #1e3a52 0%, #3a3a3a 100%);
+  --gradient-accent: linear-gradient(135deg, #b4c7cc 0%, #cadcea 100%);
+  --gradient-steel: linear-gradient(135deg, #1e3a52 0%, #2f5574 100%);
+  --gradient-scrim: linear-gradient(180deg, rgba(17, 17, 17, 0) 0%, rgba(17, 17, 17, 0.85) 100%);
+  --gradient-hairline: linear-gradient(90deg, rgba(75, 112, 141, 0) 0%, #4b708d 50%, rgba(75, 112, 141, 0) 100%);
+
+  --chart-1: #cadcea;
+  --chart-2: #8eb0c9;
+  --chart-3: #4b708d;
+  --chart-4: #1e3a52;
+  --chart-5: #b7babb;
+  --sidebar: #111111;
+  --sidebar-foreground: #b7babb;
+  --sidebar-primary: #cadcea;
+  --sidebar-primary-foreground: #111111;
+  --sidebar-accent: #3a3a3a;
+  --sidebar-accent-foreground: #cadcea;
+  --sidebar-border: #3a3a3a;
+  --sidebar-ring: #cadcea;
+}
+
+/* ---------- Gradient utilities (the brand signature) ---------- */
+@utility bg-gradient-canvas {
+  background-image: var(--gradient-canvas);
+}
+@utility bg-gradient-glow {
+  background-image: var(--gradient-glow);
+}
+@utility bg-gradient-card {
+  background-image: var(--gradient-card);
+}
+@utility bg-gradient-dusk {
+  background-image: var(--gradient-dusk);
+}
+@utility bg-gradient-accent {
+  background-image: var(--gradient-accent);
+}
+@utility bg-gradient-steel {
+  background-image: var(--gradient-steel);
+}
+@utility bg-gradient-scrim {
+  background-image: var(--gradient-scrim);
+}
+@utility bg-gradient-hairline {
+  background-image: var(--gradient-hairline);
+}
+
+/* ---------- Typography tokens (Inter, modest weights) ---------- */
+@utility type-display-mega {
+  font-size: clamp(2rem, 8vw, 5rem);
+  font-weight: 500;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+}
+@utility type-display-lg {
+  font-size: 2.25rem;
+  font-weight: 500;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+}
+@utility type-display-md {
+  font-size: 1.625rem;
+  font-weight: 500;
+  line-height: 1.5;
+  letter-spacing: 0.0075em;
+}
+@utility type-title-md {
+  font-size: 1.125rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+@utility type-title-sm {
+  font-size: 1rem;
+  font-weight: 500;
+  line-height: 1.4;
+  letter-spacing: 0.005em;
+}
+@utility type-body-sm {
+  font-size: 0.8125rem;
+  font-weight: 400;
+  line-height: 1.5;
+}
+@utility type-caption {
+  font-size: 0.75rem;
+  font-weight: 400;
+  line-height: 1.4;
+}
+/* caption-uppercase: section labels, chips, badges */
+@utility type-label {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  line-height: 1.4;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+@utility type-button {
+  font-size: 0.875rem;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+@utility type-nav {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  line-height: 1.4;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+@utility type-number {
+  font-size: 5rem;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.02em;
 }
 
 @layer base {
   * {
-    @apply border-border outline-ring/50;
-  }
-  body {
-    @apply bg-background text-foreground;
-  }
-  button:not(:disabled), [role="button"]:not(:disabled) {
-    cursor: pointer;
+    @apply border-border;
   }
   html {
     @apply font-sans;
+  }
+  body {
+    @apply bg-background text-foreground;
+    /* The top of every page is lit by the canvas gradient. */
+    background-image: var(--gradient-canvas);
+    background-repeat: no-repeat;
+    background-size: 100% 100svh;
+    font-size: 0.875rem;
+    line-height: 1.5;
+  }
+  /* 2px focus ring, 2px offset, on every interactive element. */
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+  ::selection {
+    background: var(--link);
+    color: var(--background);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
   }
 }

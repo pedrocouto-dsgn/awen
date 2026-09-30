@@ -41,26 +41,31 @@ export function aspectLabel(ratio: number | null) {
   return hit ? hit[1] : `${ratio.toFixed(2)}:1`
 }
 
+/** palette-swatch: a row of 5-6 swatches, 48px high, with hex and percentage. */
 export function PaletteSwatches({ palette, size = "md" }: { palette: ReferenceView["palette"]; size?: "sm" | "md" }) {
   if (palette.length === 0) return null
-  return (
-    <div className="flex flex-col gap-2">
-      <div className="flex h-6 w-full overflow-hidden rounded-sm" aria-hidden>
+  if (size === "sm") {
+    return (
+      <div className="flex h-1 w-full overflow-hidden" aria-hidden>
         {palette.map((c) => (
           <div key={c.hex} style={{ backgroundColor: c.hex, width: `${c.pct}%` }} />
         ))}
       </div>
-      {size === "md" ? (
-        <ul className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted-foreground">
-          {palette.map((c) => (
-            <li key={c.hex} className="flex items-center gap-1.5 font-mono">
-              <span className="size-3 rounded-full border" style={{ backgroundColor: c.hex }} aria-hidden />
-              {c.hex} <span className="tabular-nums">{Math.round(c.pct)}%</span>
-            </li>
-          ))}
-        </ul>
-      ) : null}
-    </div>
+    )
+  }
+  return (
+    <ul className="grid grid-cols-6 gap-1" aria-label="Paleta de cores">
+      {palette.map((c) => (
+        <li key={c.hex} className="flex min-w-0 flex-col gap-1.5">
+          <span className="h-12 w-full border border-border" style={{ backgroundColor: c.hex }} aria-hidden />
+          <span className="truncate font-mono text-[10px] leading-tight text-muted-foreground">
+            {c.hex}
+            <br />
+            <span className="tabular-nums">{Math.round(c.pct)}%</span>
+          </span>
+        </li>
+      ))}
+    </ul>
   )
 }
 
@@ -87,7 +92,7 @@ export function TechDetails({ reference }: { reference: ReferenceView }) {
         href={r.source_url}
         target="_blank"
         rel="noopener noreferrer"
-        className="inline-flex items-center gap-1 underline-offset-4 hover:underline"
+        className="inline-flex items-center gap-1 text-link underline-offset-4 hover:underline"
       >
         {host} <ExternalLinkIcon className="size-3" aria-hidden />
       </a>,
@@ -96,7 +101,7 @@ export function TechDetails({ reference }: { reference: ReferenceView }) {
   rows.push(["Adicionada", new Date(r.created_at).toLocaleDateString("pt-BR", { dateStyle: "medium" })])
 
   return (
-    <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-xs">
+    <dl className="type-caption grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5">
       {rows.map(([k, v]) => (
         <div key={k} className="contents">
           <dt className="text-muted-foreground">{k}</dt>

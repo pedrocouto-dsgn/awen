@@ -6,8 +6,6 @@ import { useId } from "react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Separator } from "@/components/ui/separator"
 import { Textarea } from "@/components/ui/textarea"
 import { PaletteSwatches, TechDetails } from "@/features/media/tech-details"
 import type { ReferenceView } from "@/lib/references/view"
@@ -127,7 +125,9 @@ export function ReviewPanel({ reference: r, vocab, editing, draft, onDraftChange
       <div className="flex flex-col gap-1.5">
         {editing ? (
           <>
-            <Label htmlFor={`${uid}-title`}>Título</Label>
+            <label htmlFor={`${uid}-title`} className="type-label text-muted-foreground">
+              Título
+            </label>
             <Input
               id={`${uid}-title`}
               value={draft.title ?? ""}
@@ -135,7 +135,7 @@ export function ReviewPanel({ reference: r, vocab, editing, draft, onDraftChange
             />
           </>
         ) : (
-          <h2 className="font-heading text-base leading-snug font-medium break-words">{draft.title ?? "Sem título"}</h2>
+          <h2 className="type-title-md break-words">{draft.title ?? "Sem título"}</h2>
         )}
         {!r.analyzed_at && r.media.kind === "none" ? (
           <p className="text-xs text-muted-foreground">Sem análise de IA: este link não tem mídia. Preencha à mão.</p>
@@ -180,7 +180,7 @@ export function ReviewPanel({ reference: r, vocab, editing, draft, onDraftChange
       <Field label={CATEGORY_LABEL.mood}>{multi("mood")}</Field>
 
       {suggestions.length > 0 ? (
-        <div className="flex flex-col gap-2 rounded-md border border-dashed p-3">
+        <div className="flex flex-col gap-2 border border-dashed border-border-strong p-4">
           <p className="text-xs text-muted-foreground">A IA sugeriu termos que não estão no seu vocabulário:</p>
           <ul className="flex flex-col gap-1.5">
             {suggestions.map((s) => (
@@ -250,7 +250,7 @@ export function ReviewPanel({ reference: r, vocab, editing, draft, onDraftChange
         )}
       </Field>
 
-      <Separator />
+      <div className="h-px bg-gradient-hairline" aria-hidden />
       <PaletteSwatches palette={r.palette} />
       <TechDetails reference={r} />
     </div>
@@ -261,11 +261,11 @@ function Field({ label, htmlFor, children }: { label: string; htmlFor?: string; 
   return (
     <div className="flex min-w-0 flex-col gap-1.5">
       {htmlFor ? (
-        <Label htmlFor={htmlFor} className="text-xs text-muted-foreground">
+        <label htmlFor={htmlFor} className="type-label text-muted-foreground">
           {label}
-        </Label>
+        </label>
       ) : (
-        <span className="text-xs font-medium text-muted-foreground">{label}</span>
+        <span className="type-label text-muted-foreground">{label}</span>
       )}
       {children}
     </div>

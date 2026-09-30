@@ -296,9 +296,15 @@ export function ReviewScreen({ items, vocab: initialVocab, queued }: Props) {
 
       <aside
         aria-label="Dados da referência"
-        className="flex min-h-0 w-full flex-col border-t lg:w-[400px] lg:border-t-0 lg:border-l"
+        className="flex min-h-0 w-full flex-col border-t bg-gradient-dusk lg:w-[420px] lg:border-t-0 lg:border-l"
       >
-        <div className="flex items-center gap-1 border-b px-4 py-2">
+        <div className="relative flex items-center gap-1 border-b px-4 py-2">
+          <div className="absolute inset-x-0 bottom-0 h-0.5 bg-card" aria-hidden>
+            <div
+              className="h-full bg-gradient-accent transition-[width]"
+              style={{ width: `${((index + 1) / Math.max(1, list.length)) * 100}%` }}
+            />
+          </div>
           <Button
             variant="ghost"
             size="icon-sm"
@@ -343,7 +349,7 @@ export function ReviewScreen({ items, vocab: initialVocab, queued }: Props) {
           </DropdownMenu>
         </div>
 
-        <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4">
+        <div className="min-h-0 flex-1 overflow-y-auto px-6 py-6">
           <ReviewPanel
             key={current.id}
             reference={current}
@@ -355,27 +361,27 @@ export function ReviewScreen({ items, vocab: initialVocab, queued }: Props) {
           />
         </div>
 
-        <div className="flex items-center gap-2 border-t px-4 py-3">
+        <div className="flex min-h-[72px] items-center gap-2 border-t bg-background px-4 py-3">
           {editing ? (
             <>
-              <Button variant="ghost" onClick={resetDraft} disabled={busy}>
+              <Button variant="ghost" size="sm" onClick={resetDraft} disabled={busy}>
                 Cancelar <Kbd>Esc</Kbd>
               </Button>
-              <Button variant="outline" onClick={() => void saveEdits()} disabled={busy}>
+              <Button variant="outline" size="sm" onClick={() => void saveEdits()} disabled={busy}>
                 Salvar <Kbd>⌘↵</Kbd>
               </Button>
             </>
           ) : (
             <>
-              <Button variant="outline" onClick={() => void decide("rejected")} disabled={busy}>
+              <Button variant="destructive" size="sm" onClick={() => void decide("rejected")} disabled={busy}>
                 <XIcon /> Rejeitar <Kbd>R</Kbd>
               </Button>
-              <Button variant="outline" onClick={() => setEditing(true)} disabled={busy}>
+              <Button variant="outline" size="sm" onClick={() => setEditing(true)} disabled={busy}>
                 <PencilIcon /> Editar <Kbd>E</Kbd>
               </Button>
             </>
           )}
-          <Button className="ml-auto" onClick={() => void decide("approved")} disabled={busy}>
+          <Button variant="accent" size="sm" className="ml-auto" onClick={() => void decide("approved")} disabled={busy}>
             {busy ? <Loader2Icon className="animate-spin" /> : <CheckIcon />} Aprovar {editing ? null : <Kbd>A</Kbd>}
           </Button>
         </div>
@@ -396,7 +402,7 @@ export function ReviewScreen({ items, vocab: initialVocab, queued }: Props) {
 
 function Kbd({ children }: { children: React.ReactNode }) {
   return (
-    <kbd className="hidden rounded-sm border px-1 font-mono text-[10px] leading-4 text-muted-foreground sm:inline">
+    <kbd className="hidden border border-current/40 px-1 font-mono text-[10px] leading-4 tracking-normal opacity-70 sm:inline">
       {children}
     </kbd>
   )

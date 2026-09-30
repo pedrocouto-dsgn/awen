@@ -85,14 +85,14 @@ export function LibraryToolbar({ filters, options, total }: { filters: LibraryFi
     <div className="flex flex-col gap-3">
       <div className="flex items-center gap-2">
         <div className="relative max-w-md flex-1">
-          <SearchIcon className="pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden />
+          <SearchIcon className="pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden />
           <Input
             type="search"
             value={q}
             onChange={(e) => onSearch(e.target.value)}
             placeholder="Buscar em descrições, tags e notas"
             aria-label="Buscar"
-            className="pl-8"
+            className="h-11 bg-card pl-10"
           />
         </div>
 
@@ -230,7 +230,7 @@ function ChipClear({ label, onClick }: { label: string; onClick: () => void }) {
 function Group({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <section className="flex flex-col gap-2">
-      <h3 className="text-xs font-medium text-muted-foreground">{label}</h3>
+      <h3 className="type-label text-muted-foreground">{label}</h3>
       {children}
     </section>
   )
@@ -256,8 +256,10 @@ function ChoiceChips({
             aria-pressed={on}
             onClick={() => onToggle(key)}
             className={cn(
-              "rounded-full border px-2.5 py-0.5 text-xs transition-colors focus-visible:outline-2",
-              on ? "border-primary bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground",
+              "type-label border px-3 py-1.5 transition-colors",
+              on
+                ? "border-transparent bg-gradient-steel text-foreground"
+                : "border-border-strong text-muted-foreground hover:text-foreground",
             )}
           >
             {label}
@@ -326,7 +328,7 @@ function ColorFilter({ value, onChange }: { value?: string; onChange: (hex: stri
                 setOpen(false)
               }}
               className={cn(
-                "aspect-square rounded-sm border focus-visible:outline-2",
+                "aspect-square border border-border-strong",
                 value === hex && "ring-2 ring-ring ring-offset-2 ring-offset-popover",
               )}
               style={{ backgroundColor: `#${hex}` }}
@@ -340,7 +342,7 @@ function ColorFilter({ value, onChange }: { value?: string; onChange: (hex: stri
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
             aria-label="Escolher cor"
-            className="h-8 w-10 cursor-pointer rounded-sm border bg-transparent"
+            className="h-9 w-11 cursor-pointer border border-border-strong bg-transparent"
           />
           <span className="font-mono text-xs">{draft}</span>
           <Button

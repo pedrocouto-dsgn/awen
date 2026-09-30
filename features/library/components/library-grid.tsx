@@ -42,7 +42,7 @@ export function LibraryGrid({ initialCards, initialNextOffset, total, query }: P
 
   return (
     <div className="flex flex-col gap-6">
-      <ul className="columns-2 gap-3 sm:columns-3 lg:columns-4 2xl:columns-5 [&>li]:mb-3">
+      <ul className="columns-2 gap-4 sm:columns-3 lg:columns-4 xl:columns-5 2xl:columns-6 [&>li]:mb-4">
         {cards.map((card) => (
           <li key={card.id} className="break-inside-avoid">
             <Card card={card} />
@@ -82,7 +82,7 @@ function Card({ card }: { card: LibraryCard }) {
   return (
     <Link
       href={`/library/${card.id}`}
-      className="group relative block overflow-hidden rounded-md bg-media focus-visible:outline-2 focus-visible:outline-offset-2"
+      className="group relative block overflow-hidden bg-media"
       style={{ aspectRatio: String(ratio), backgroundColor: fallbackColor }}
       onMouseEnter={() => {
         setHovering(true)
@@ -121,14 +121,14 @@ function Card({ card }: { card: LibraryCard }) {
       ) : null}
 
       {card.type === "video" ? (
-        <span className="absolute top-2 left-2 flex items-center gap-1 rounded-sm bg-overlay px-1.5 py-0.5 text-[10px] text-media-foreground">
+        <span className="type-label absolute top-2 left-2 flex items-center gap-1 bg-overlay px-2 py-0.5 text-scrim-foreground">
           <PlayIcon className="size-2.5 fill-current" aria-hidden />
           {card.duration ? formatDuration(card.duration) : card.sourceKind === "youtube" ? "YouTube" : "Vídeo"}
         </span>
       ) : null}
 
-      <div className="absolute inset-x-0 bottom-0 flex flex-col gap-1 bg-gradient-to-t from-overlay to-transparent p-2.5 pt-8 text-media-foreground opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100">
-        <p className="line-clamp-2 text-xs font-medium">{card.title ?? "Sem título"}</p>
+      <div className="absolute inset-x-0 bottom-0 flex flex-col gap-1 bg-gradient-scrim p-4 pt-10 text-scrim-foreground opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100">
+        <p className="type-caption line-clamp-2 font-medium">{card.title ?? "Sem título"}</p>
         <div className="flex items-center gap-2 text-[10px] opacity-80">
           {card.shotType ? <span>{card.shotType}</span> : null}
           {card.mood.slice(0, 2).map((m) => (
@@ -141,7 +141,7 @@ function Card({ card }: { card: LibraryCard }) {
           ) : null}
         </div>
         {card.palette.length ? (
-          <div className="mt-1 flex h-1 overflow-hidden rounded-full" aria-hidden>
+          <div className="mt-1 flex h-1 overflow-hidden" aria-hidden>
             {card.palette.map((c) => (
               <span key={c.hex} style={{ backgroundColor: c.hex, width: `${c.pct}%` }} />
             ))}
