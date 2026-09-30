@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation"
 
+import { ActiveProjectChip } from "@/components/shell/active-project-chip"
 import { AppHeader } from "@/components/shell/app-header"
 import { AppSidebar } from "@/components/shell/app-sidebar"
 import { AnalysisProvider } from "@/features/analysis/analysis-provider"
@@ -9,6 +10,7 @@ import { GlobalDropPaste } from "@/features/ingest/components/global-drop-paste"
 import { IngestTray } from "@/features/ingest/components/ingest-tray"
 import { IngestProvider } from "@/features/ingest/ingest-provider"
 import { getQueueStats } from "@/lib/analysis/stats"
+import { getActiveProject } from "@/lib/references/links"
 import { createClient } from "@/lib/supabase/server"
 
 export default async function AppLayout({ children }: LayoutProps<"/">) {
@@ -17,7 +19,7 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
   if (!data?.claims?.sub) redirect("/login")
 
   const email = typeof data.claims.email === "string" ? data.claims.email : null
-  const stats = await getQueueStats(supabase)
+  const [stats, activeProject] = await Promise.all([getQueueStats(supabase), getActiveProject(supabase)])
 
   return (
     <AnalysisProvider initialStats={stats}>
@@ -29,6 +31,7 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
               email={email}
               actions={
                 <>
+                  <ActiveProjectChip project={activeProject} />
                   <AnalysisIndicator />
                   <AddReferenceDialog />
                 </>

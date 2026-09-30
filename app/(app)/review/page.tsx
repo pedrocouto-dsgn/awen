@@ -5,6 +5,7 @@ import { FailedList } from "@/features/review/components/failed-list"
 import { ReviewScreen } from "@/features/review/components/review-screen"
 import { getFailedItems, getReviewItems } from "@/features/review/data"
 import { getQueueStats } from "@/lib/analysis/stats"
+import { getActiveProject } from "@/lib/references/links"
 import { getVocabularies } from "@/lib/references/vocab"
 import { createClient } from "@/lib/supabase/server"
 import { cn } from "@/lib/utils"
@@ -16,10 +17,10 @@ export default async function ReviewPage({ searchParams }: PageProps<"/review">)
   const tab = aba === "falhas" ? "failed" : "review"
   const supabase = await createClient()
 
-  const [stats, vocab, items] = await Promise.all([
+  const [stats, vocab, activeProject] = await Promise.all([
     getQueueStats(supabase),
     getVocabularies(supabase),
-    tab === "review" ? getReviewItems(supabase) : getFailedItems(supabase),
+    getActiveProject(supabase),
   ])
 
   return (
@@ -36,9 +37,14 @@ export default async function ReviewPage({ searchParams }: PageProps<"/review">)
         </nav>
       ) : null}
       {tab === "review" ? (
-        <ReviewScreen items={items} vocab={vocab} queued={stats.queued + stats.analyzing} />
+        <ReviewScreen
+          items={await getReviewItems(supabase)}
+          vocab={vocab}
+          queued={stats.queued + stats.analyzing}
+          activeProject={activeProject}
+        />
       ) : (
-        <FailedList items={items} />
+        <FailedList items={await getFailedItems(supabase)} />
       )}
     </div>
   )

@@ -30,14 +30,17 @@ import { useAnalysis } from "@/features/analysis/analysis-provider"
 import { ACCEPT } from "@/features/ingest/components/add-reference-dialog"
 import { useIngest } from "@/features/ingest/ingest-provider"
 import { MediaViewer } from "@/features/media/media-viewer"
+import { ReferenceLinks } from "@/features/references/reference-links"
+import type { ActiveProject } from "@/lib/references/links"
 import type { ReferenceView } from "@/lib/references/view"
 import type { VocabMap, VocabTerm } from "@/lib/references/vocab"
 import type { VocabCategory } from "@/types/database"
 
+import type { ReviewItem } from "../data"
 import { DeleteReferenceDialog } from "./delete-reference-dialog"
 import { draftFrom, ReviewPanel, type ReviewDraft } from "./review-panel"
 
-type Props = { items: ReferenceView[]; vocab: VocabMap; queued: number }
+type Props = { items: ReviewItem[]; vocab: VocabMap; queued: number; activeProject: ActiveProject }
 
 async function patchReference(id: string, body: Record<string, unknown>) {
   const res = await fetch(`/api/references/${id}`, {
@@ -67,7 +70,7 @@ function isEditableTarget(target: EventTarget | null) {
   )
 }
 
-export function ReviewScreen({ items, vocab: initialVocab, queued }: Props) {
+export function ReviewScreen({ items, vocab: initialVocab, queued, activeProject }: Props) {
   const router = useRouter()
   const { retryFailed, refreshStats } = useAnalysis()
   const { addFiles } = useIngest()
@@ -359,6 +362,18 @@ export function ReviewScreen({ items, vocab: initialVocab, queued }: Props) {
             onDraftChange={updateDraft}
             onAcceptSuggestion={(c, t) => void acceptSuggestion(c, t)}
           />
+          <div className="mt-6">
+            <ReferenceLinks
+              key={current.id}
+              referenceId={current.id}
+              referenceType={current.type}
+              initialPeople={current.links.people}
+              initialProjects={current.links.projects}
+              activeProject={activeProject}
+              aiArtist={current.ai?.artist ?? null}
+              shortcuts={!editing}
+            />
+          </div>
         </div>
 
         <div className="flex min-h-[72px] items-center gap-2 border-t bg-background px-4 py-3">

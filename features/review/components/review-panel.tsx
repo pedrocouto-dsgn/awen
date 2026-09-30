@@ -61,8 +61,6 @@ const CATEGORY_LABEL: Record<VocabCategory, string> = {
   mood: "Clima",
 }
 
-const CONFIDENCE_LABEL = { low: "baixa", medium: "média", high: "alta" } as const
-
 type Props = {
   reference: ReferenceView
   vocab: VocabMap
@@ -222,15 +220,6 @@ export function ReviewPanel({ reference: r, vocab, editing, draft, onDraftChange
           <Chips values={draft.tags} />
         )}
       </Field>
-
-      {r.ai?.artist?.name ? (
-        <Field label="Possível autor (sugestão da IA)">
-          <p className="text-sm">
-            {r.ai.artist.name}{" "}
-            <span className="text-muted-foreground">· confiança {CONFIDENCE_LABEL[r.ai.artist.confidence]}</span>
-          </p>
-        </Field>
-      ) : null}
 
       <Field label="Nota">
         <RatingInput value={draft.rating} onChange={(rating) => onDraftChange({ rating })} />

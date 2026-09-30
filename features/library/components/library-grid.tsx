@@ -1,8 +1,9 @@
 "use client"
 
-import { Loader2Icon, PlayIcon, StarIcon } from "lucide-react"
+import { Loader2Icon, PlayIcon, StarIcon, XIcon } from "lucide-react"
 import Link from "next/link"
 import { useRef, useState } from "react"
+import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
 import type { LibraryCard } from "@/lib/library/search"
@@ -13,9 +14,11 @@ type Props = {
   total: number
   /** Current filter query string, used to fetch more pages. */
   query: string
+  /** On a project page: show "remove from project" on each card. */
+  projectId?: string
 }
 
-export function LibraryGrid({ initialCards, initialNextOffset, total, query }: Props) {
+export function LibraryGrid({ initialCards, initialNextOffset, total, query, projectId }: Props) {
   const [cards, setCards] = useState(initialCards)
   const [nextOffset, setNextOffset] = useState(initialNextOffset)
   const [loading, setLoading] = useState(false)
@@ -45,7 +48,22 @@ export function LibraryGrid({ initialCards, initialNextOffset, total, query }: P
       <ul className="columns-2 gap-4 sm:columns-3 lg:columns-4 xl:columns-5 2xl:columns-6 [&>li]:mb-4">
         {cards.map((card) => (
           <li key={card.id} className="break-inside-avoid">
-            <Card card={card} />
+            <Card
+              card={card}
+              onRemove={
+                projectId
+                  ? async () => {
+                      const res = await fetch(`/api/projects/${projectId}/references`, {
+                        method: "DELETE",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ referenceIds: [card.id] }),
+                      })
+                      if (res.ok) setCards((c) => c.filter((x) => x.id !== card.id))
+                      else toast.error("Não foi possível remover do projeto.")
+                    }
+                  : undefined
+              }
+            />
           </li>
         ))}
       </ul>
@@ -73,13 +91,14 @@ function formatDuration(s: number) {
   return `${m}:${String(Math.round(s % 60)).padStart(2, "0")}`
 }
 
-function Card({ card }: { card: LibraryCard }) {
+function Card({ card, onRemove }: { card: LibraryCard; onRemove?: () => Promise<void> }) {
   const videoRef = useRef<HTMLVideoElement>(null)
   const [hovering, setHovering] = useState(false)
   const ratio = card.width && card.height ? card.width / card.height : (card.aspectRatio ?? 1)
   const fallbackColor = card.palette[0]?.hex
 
   return (
+    <div className="group relative">
     <Link
       href={`/library/${card.id}`}
       className="group relative block overflow-hidden bg-media"
@@ -149,5 +168,16 @@ function Card({ card }: { card: LibraryCard }) {
         ) : null}
       </div>
     </Link>
+      {onRemove ? (
+        <button
+          type="button"
+          aria-label={`Remover “${card.title ?? "referência"}” do projeto`}
+          onClick={() => void onRemove()}
+          className="absolute top-2 right-2 flex size-7 items-center justify-center bg-overlay text-scrim-foreground opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100"
+        >
+          <XIcon className="size-3.5" />
+        </button>
+      ) : null}
+    </div>
   )
 }
