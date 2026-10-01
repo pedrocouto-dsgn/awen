@@ -52,6 +52,9 @@ type ReferenceRow = Owned & {
   notes: string | null
   search_tsv: unknown
   embedding: string | null
+  embedding_model: string | null
+  embedded_at: string | null
+  embedding_attempted_at: string | null
 }
 
 type Insertable<Row, Required extends keyof Row> = Pick<Row, Required> &
@@ -181,6 +184,28 @@ export type Database = {
     Views: { [_ in never]: never }
     Functions: {
       claim_next_analysis: { Args: Record<PropertyKey, never>; Returns: ReferenceRow[] }
+      next_embedding_batch: {
+        Args: { p_model: string; p_limit?: number }
+        Returns: Pick<
+          ReferenceRow,
+          | "id"
+          | "thumbnail_key"
+          | "title"
+          | "description"
+          | "subject"
+          | "setting"
+          | "era"
+          | "visual_style"
+          | "texture_grain"
+          | "shot_type"
+          | "camera_angle"
+          | "camera_movement"
+          | "lighting"
+          | "mood"
+          | "tags"
+          | "notes"
+        >[]
+      }
       queue_stats: {
         Args: Record<PropertyKey, never>
         Returns: {

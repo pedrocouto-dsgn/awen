@@ -5,7 +5,7 @@ A private creative reference bank for AI-driven video and photography: collect i
 - UI in Brazilian Portuguese (pt-BR); AI descriptions, tags and vocabularies in English.
 - Invite-only: public sign-up is off. Each account sees only its own data (Row Level Security).
 
-**Stack:** Next.js 16 (App Router) · TypeScript (strict) · Tailwind v4 · shadcn/ui · Supabase (Postgres + pgvector, Auth) · Cloudflare R2 · Gemini API · Vercel.
+**Stack:** Next.js 16 (App Router) · TypeScript (strict) · Tailwind v4 · shadcn/ui · Supabase (Postgres + pgvector, Auth) · Cloudflare R2 · Gemini API (swappable provider) · Vercel.
 
 ---
 
@@ -15,7 +15,7 @@ A private creative reference bank for AI-driven video and photography: collect i
 | --- | --- |
 | **Add** | Drag and drop (many files), paste an image or link anywhere (⌘V), or paste a link. YouTube/Vimeo via oEmbed (embedded player), Pinterest/Instagram/pages via Open Graph. When no media can be captured, the link is kept and you can upload the file manually. Files go **straight from the browser to R2** (presigned PUT), never through Vercel. |
 | **Technical data (code, not AI)** | Width, height, aspect ratio, size, MIME type; duration and fps for video (MP4 headers via mp4box); a 6-color palette (k-means in Lab) with percentages; a 64-bit perceptual hash to flag near-duplicates. Four video frames are extracted in the browser. |
-| **AI analysis** | Gemini with structured JSON output limited to your vocabularies (with "suggested new term" when nothing fits): shot type, camera angle, camera movement (video), lighting, mood, visual style, texture/grain, setting, era, subject, description, tags, and a possible artist/director (always a suggestion). Lens is never analyzed. Runs as a resumable queue with retry, backoff and a "failed" state with a retry button. |
+| **AI analysis** | Gemini (or any OpenRouter vision model, by configuration) with structured JSON output limited to your vocabularies (with "suggested new term" when nothing fits): shot type, camera angle, camera movement (video), lighting, mood, visual style, texture/grain, setting, era, subject, description, tags, and a possible artist/director (always a suggestion). Lens is never analyzed. Runs as a resumable queue with retry, backoff and a "failed" state with a retry button. |
 | **Review** | One card at a time with editable AI fields. **A** approve · **E** edit · **R** reject · **← →** navigate · **1–5** rating · **P** add to the active project · **Esc** cancel · **⌘↵** save. Undo after approve or reject. Only approved items reach the Library. |
 | **Library** | Masonry grid, hover preview, detail view with a large viewer (image, HTML5 video, YouTube/Vimeo embed), all metadata, palette, notes, people, projects. Combinable filters (shot, mood, lighting, aspect ratio, person, project, image/video, source, date, rating), full-text search (description, tags, notes…) and search by color. |
 | **People** | Directors, photographers and artists with autocomplete, a role per link, and a page per person. |
@@ -36,6 +36,9 @@ Out of scope for Phase 1 (the schema is ready): prompt library UI, Chrome extens
 | `…000002_rls.sql` | Enables RLS on every table. Nothing is granted to `anon`, the minimum is granted to `authenticated`, and policies use `owner_id = auth.uid()`. |
 | `…000003_functions.sql` | Full-text trigger, analysis queue (`claim_next_analysis`, `queue_stats`), `search_references` (filters + color), `find_near_duplicates`, `set_active_project`, `ensure_vocabularies`. |
 | `…000004_vocabulary_admin.sql` | `rename_vocab_term` (cascades to references) and `reorder_vocabulary`, used by Settings. |
+| `…000005_people_photo.sql` | `people.photo_key` for the artist banner. |
+| `…000006_embeddings.sql` | Embedding bookkeeping columns, `reset_embedding` trigger (approval or text edits clear the vector), `next_embedding_batch`, HNSW cosine index. |
+| `…000007_fix_reset_embedding.sql` | Fixes the 0006 trigger (it failed every update on `references` because of the empty `search_path`). |
 
 **SQL editor (simplest):** Supabase Dashboard → SQL Editor → paste each file's contents **in order** → *Run*.
 
@@ -99,14 +102,22 @@ Objects are stored as `{userId}/{referenceId}/original.ext | thumb.jpg | frames/
 
 ---
 
-## 3. Gemini
+## 3. AI provider and embeddings
 
-Create an API key in Google AI Studio **in a project on the free tier** (no billing), or in a project with billing and available credits. A prepaid project with no credits returns `402` and the queue shows "Análise pausada".
+Analysis goes through a provider adapter (`lib/ai`). Every provider gets the same prompt and JSON Schema, and the output is validated with the same Zod schema, so switching is configuration only:
 
-- Default model: `gemini-3.8-flash` (current stable Flash on the free tier). If you hit the daily limit often, try `gemini-3.5-flash-lite`.
+| `AI_PROVIDER` | `AI_MODEL` | Notes |
+| --- | --- | --- |
+| `gemini` (default) | `gemini-3.1-flash-lite` (default) | Key from Google AI Studio **in a free-tier project** (no billing). A prepaid project with no credits returns `402` and the queue shows "Análise pausada". Reads YouTube videos directly. |
+| `openrouter` | e.g. `qwen/qwen3-vl-32b-instruct` | Any OpenRouter vision model. YouTube links are analyzed from the thumbnail. |
+
+- **Automatic fallback:** with `AI_FALLBACK_PROVIDER` / `AI_FALLBACK_MODEL` / `AI_FALLBACK_API_KEY` set (e.g. `openrouter` + `qwen/qwen3-vl-32b-instruct`, about US$0.0003 per analysis), items are analyzed by the fallback when the main provider's **daily** quota is used up (Gemini's 429 names a `…PerDay…` quota). Per-minute limits still just pause the queue. Every item tries the main provider first, so it takes back over once its quota resets. The card shows which model analyzed it. `ANALYSIS_DAILY_LIMIT` still applies, which also caps fallback spend.
+- `GEMINI_API_KEY` / `GEMINI_MODEL` (Phase 1 names) are still read when `AI_PROVIDER=gemini` and `AI_*` are empty.
 - All users share one key, so `ANALYSIS_DAILY_LIMIT` (default 100 per user per 24 h) protects the quota.
 
-**How the queue runs.** While Awen is open, a browser worker (one per browser, via the Web Locks API; state is shared across tabs) calls `POST /api/analysis/run` about every 4 s. Each call claims one item with `FOR UPDATE SKIP LOCKED` and finishes well within the function limit. Transient errors back off exponentially (30 s → 30 min) for up to 5 attempts; then the item is `failed`, with a retry button. Rate limits, billing and bad keys pause the whole queue without spending attempts. A daily Vercel Cron (`/api/cron/analysis`) drains up to 20 items when nobody has the app open.
+**Embeddings.** Each approved reference gets one multimodal vector (preview image + curated text: description, tags, notes…) from `gemini-embedding-2` at 768 dimensions, stored in `references.embedding`. Text queries land in the same space, so one column serves natural-language and similar-image search. Approving a reference or editing its text clears the vector (trigger), and the worker re-embeds it in batches of 8 when the analysis queue is idle; embeddings do not count toward the daily limit. Changing `EMBEDDING_MODEL` re-embeds the whole library automatically.
+
+**How the queue runs.** While Awen is open, a browser worker (one per browser, via the Web Locks API; state is shared across tabs) calls `POST /api/analysis/run` about every 4 s. Each call claims one item with `FOR UPDATE SKIP LOCKED` and finishes well within the function limit. Transient errors back off exponentially (30 s → 30 min) for up to 5 attempts; then the item is `failed`, with a retry button. Rate limits, billing and bad keys pause the whole queue without spending attempts. A daily Vercel Cron (`/api/cron/analysis`) drains up to 20 items (analyses, then embedding batches) when nobody has the app open.
 
 ---
 
@@ -123,8 +134,12 @@ Copy `.env.example` to `.env.local` for local development. Set the same variable
 | `R2_ACCESS_KEY_ID` / `R2_SECRET_ACCESS_KEY` | server only | R2 API token |
 | `R2_BUCKET` | server only | `awen-references` |
 | `R2_PUBLIC_BASE_URL` | server only | Optional; leave empty (reads use presigned URLs) |
-| `GEMINI_API_KEY` | server only | Google AI Studio key |
-| `GEMINI_MODEL` | server only | e.g. `gemini-3.8-flash` |
+| `AI_PROVIDER` | server only | `gemini` (default) or `openrouter` |
+| `AI_MODEL` | server only | Default `gemini-3.1-flash-lite` for Gemini; required for OpenRouter |
+| `AI_API_KEY` | server only | Key for the chosen provider (falls back to `GEMINI_API_KEY` for Gemini) |
+| `AI_FALLBACK_PROVIDER` / `AI_FALLBACK_MODEL` / `AI_FALLBACK_API_KEY` | server only | Optional; used only when the main provider's daily quota is used up |
+| `EMBEDDING_MODEL` | server only | Optional, default `gemini-embedding-2` |
+| `EMBEDDING_API_KEY` | server only | Optional Gemini key for embeddings; defaults to `GEMINI_API_KEY`, or `AI_API_KEY` when the provider is Gemini. Without one, embeddings are skipped |
 | `ANALYSIS_DAILY_LIMIT` | server only | Optional, default `100` |
 | `CRON_SECRET` | server only | Long random string; Vercel sends it to the cron route |
 

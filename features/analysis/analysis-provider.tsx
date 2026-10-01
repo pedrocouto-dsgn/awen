@@ -136,7 +136,8 @@ export function AnalysisProvider({ initialStats, children }: { initialStats: Que
           continue
         }
 
-        router.refresh()
+        // Embeddings change nothing on screen; only analyses need a refresh.
+        if (result.state !== "embedded") router.refresh()
         await sleep(MIN_INTERVAL_MS)
       }
     }

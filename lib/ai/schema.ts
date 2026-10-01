@@ -37,7 +37,7 @@ const multi = (terms: string[], description: string) => ({
   required: ["values", "suggested_new_terms"],
 })
 
-/** JSON Schema passed to Gemini as responseJsonSchema. */
+/** JSON Schema for structured output (Gemini responseJsonSchema, OpenRouter response_format). */
 export function analysisJsonSchema(vocab: Vocabularies, isVideo: boolean) {
   const properties: Record<string, unknown> = {
     shot_type: single(vocab.shot_type, "Shot size / framing."),

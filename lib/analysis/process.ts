@@ -2,9 +2,9 @@ import "server-only"
 
 import type { SupabaseClient } from "@supabase/supabase-js"
 
-import { analyzeMedia, FatalAnalysisError, RetryableAnalysisError, type AnalysisInput } from "@/lib/gemini/analyze"
-import type { AnalysisContext } from "@/lib/gemini/prompt"
-import { OTHER, type AnalysisOutput, type Vocabularies } from "@/lib/gemini/schema"
+import { analyzeMedia, FatalAnalysisError, RetryableAnalysisError, type AnalysisInput } from "@/lib/ai/analyze"
+import type { AnalysisContext } from "@/lib/ai/prompt"
+import { OTHER, type AnalysisOutput, type Vocabularies } from "@/lib/ai/schema"
 import { getObjectBytes } from "@/lib/r2/presign"
 import type { Database, Reference, TablesUpdate, VocabCategory } from "@/types/database"
 
@@ -17,6 +17,7 @@ export type PauseReason = "rate_limit" | "billing" | "auth" | "daily_limit"
 export type RunResult =
   | { state: "idle" }
   | { state: "done"; id: string }
+  | { state: "embedded"; count: number }
   | { state: "rescheduled"; id: string; retryAt: string; error: string }
   | { state: "failed"; id: string; error: string }
   | { state: "paused"; id?: string; reason: PauseReason; retryAfterMs: number; error: string }
