@@ -7,9 +7,9 @@
 
   "currentPhase": "Fase 2 — Ferramentas de trabalho",
   "nextStep": {
-    "milestone": "M12",
-    "title": "Biblioteca de prompts completa (versões, blocos, modelos com variáveis)",
-    "notes": "Tabelas prompts, prompt_assets e prompt_references já existem desde o M1 (schema), sem UI ainda."
+    "milestone": "M12b",
+    "title": "Comparar versões lado a lado, blocos reutilizáveis, preencher modelos com variáveis",
+    "notes": "Schema já aplicado na 0010 (prompts.version_note, prompts.is_template, tabela prompt_blocks). Só falta UI/API."
   },
 
   "phases": {
@@ -54,7 +54,14 @@
           "commit": "549fcd7",
           "notes": "Cortes de distância em lib/library/query-vectors.ts (texto 0.65 + margem 0.05; visual 0.32 + margem 0.15), calibrados com só 6 referências: revisar quando a biblioteca crescer."
         },
-        { "id": "M12", "title": "Biblioteca de prompts completa (versões, blocos, modelos com variáveis)", "status": "next" },
+        {
+          "id": "M12a",
+          "title": "Prompts: resultado e entradas (arquivos separados da biblioteca), metadados, versões simples, ligação com referências e projetos, lista com filtros",
+          "status": "done",
+          "commit": "PENDING"
+        },
+        { "id": "M12b", "title": "Comparar versões, blocos reutilizáveis, preencher modelos com variáveis", "status": "next" },
+        { "id": "M12c", "title": "Análise por IA dos prompts (tags e seções), busca por significado nos prompts, captura pela extensão", "status": "todo" },
         { "id": "M13", "title": "Moodboard com exportação (PNG, PDF, imagens separadas)", "status": "todo" },
         { "id": "M14", "title": "Anotações sobre a imagem e conclusão do modo aleatório", "status": "todo" }
       ]
@@ -85,7 +92,8 @@
       "20261001000006_embeddings.sql",
       "20261001000007_fix_reset_embedding.sql",
       "20261001000008_api_tokens.sql",
-      "20261001000009_semantic_search.sql"
+      "20261001000009_semantic_search.sql",
+      "20261001000010_prompt_library.sql"
     ],
     "pending": []
   },
@@ -112,6 +120,10 @@
     { "owner": "usuário", "item": "Conferir Supabase → Authentication → URL Configuration (Site URL e Redirect URLs com awen-theta.vercel.app)." },
     { "owner": "claude", "item": "Testar upload de vídeo local de ponta a ponta (nunca testado)." },
     { "owner": "claude", "item": "Testar o e-mail de 'esqueci a senha' em produção." }
+  ],
+
+  "decisions": [
+    "Prompts (M12): resultado e entradas ficam em R2 sob {owner}/prompts/{promptId}/, fora da biblioteca e da fila de revisão. Uma entrada pode apontar para uma referência existente."
   ],
 
   "workingAgreements": [

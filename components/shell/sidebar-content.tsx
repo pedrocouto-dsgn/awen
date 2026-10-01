@@ -13,6 +13,7 @@ import {
   PaletteIcon,
   PauseIcon,
   PlusIcon,
+  ScrollTextIcon,
   SearchIcon,
   ShuffleIcon,
   StarIcon,
@@ -334,6 +335,7 @@ function Sections({ expanded, params, onNavigate }: { expanded: boolean; params:
           expanded={expanded}
           onNavigate={onNavigate}
         />
+        <NavRow href="/prompts" label="Prompts" icon={ScrollTextIcon} expanded={expanded} onNavigate={onNavigate} />
         <NavRow
           href="/review"
           label="Revisão"

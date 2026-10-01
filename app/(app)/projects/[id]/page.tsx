@@ -7,8 +7,10 @@ import { EmptyState } from "@/components/shell/empty-state"
 import { PageBreadcrumb } from "@/components/shell/page-breadcrumb"
 import { LibraryGrid } from "@/features/library/components/library-grid"
 import { ProjectHeader } from "@/features/projects/project-header"
+import { PromptGrid } from "@/features/prompts/prompt-grid"
 import { filtersToParams, parseFilters } from "@/lib/library/filters"
 import { searchLibrary } from "@/lib/library/search"
+import { promptsForProject } from "@/lib/prompts/data"
 import { createClient } from "@/lib/supabase/server"
 
 async function load(id: string) {
@@ -32,7 +34,7 @@ export default async function ProjectPage({ params }: PageProps<"/projects/[id]"
   const { supabase, project } = found
 
   const filters = parseFilters({ projeto: project.id })
-  const result = await searchLibrary(supabase, filters)
+  const [result, prompts] = await Promise.all([searchLibrary(supabase, filters), promptsForProject(supabase, project.id)])
 
   return (
     <>
@@ -59,6 +61,12 @@ export default async function ProjectPage({ params }: PageProps<"/projects/[id]"
             }
           />
         )}
+        {prompts.length > 0 ? (
+          <section className="flex flex-col gap-4" aria-label="Prompts usados">
+            <h2 className="type-label text-muted-foreground">Prompts usados · {prompts.length}</h2>
+            <PromptGrid initialCards={prompts} />
+          </section>
+        ) : null}
       </div>
     </>
   )

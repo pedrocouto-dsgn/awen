@@ -4,7 +4,9 @@ import { z } from "zod"
 
 import { PageBreadcrumb } from "@/components/shell/page-breadcrumb"
 import { ReferenceDetail } from "@/features/library/components/reference-detail"
+import { LinkedPrompts } from "@/features/prompts/linked-prompts"
 import { ReferenceLinks } from "@/features/references/reference-links"
+import { promptsForReference } from "@/lib/prompts/data"
 import { getActiveProject, loadLinks } from "@/lib/references/links"
 import { toReferenceView } from "@/lib/references/view"
 import { getVocabularies } from "@/lib/references/vocab"
@@ -26,11 +28,12 @@ export default async function ReferencePage({ params }: PageProps<"/library/[id]
   const found = await load((await params).id)
   if (!found) notFound()
 
-  const [view, vocab, links, activeProject] = await Promise.all([
+  const [view, vocab, links, activeProject, prompts] = await Promise.all([
     toReferenceView(found.ref),
     getVocabularies(found.supabase),
     loadLinks(found.supabase, [found.ref.id]),
     getActiveProject(found.supabase),
+    promptsForReference(found.supabase, found.ref.id),
   ])
   const own = links.get(view.id) ?? { people: [], projects: [] }
   return (
@@ -47,6 +50,7 @@ export default async function ReferencePage({ params }: PageProps<"/library/[id]
           aiArtist={view.ai?.artist ?? null}
           shortcuts
         />
+        <LinkedPrompts prompts={prompts} referenceId={view.id} />
       </ReferenceDetail>
     </div>
   )

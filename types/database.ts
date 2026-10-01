@@ -103,12 +103,34 @@ type PromptRow = Owned & {
   source_url: string | null
   notes: string | null
   parent_prompt_id: string | null
+  title: string | null
+  tags: string[]
+  version_note: string | null
+  is_template: boolean
+  search_tsv: unknown
 }
 type PromptAssetRow = Owned & {
   prompt_id: string
   reference_id: string | null
   storage_key: string | null
   role: Database["public"]["Enums"]["prompt_asset_role"]
+  kind: Database["public"]["Enums"]["reference_type"] | null
+  mime_type: string | null
+  width: number | null
+  height: number | null
+  duration: number | null
+  file_size: number | null
+  thumbnail_key: string | null
+  palette: Json | null
+  sort_order: number
+  media_ready: boolean
+}
+type PromptProjectRow = Owned & { prompt_id: string; project_id: string }
+type PromptBlockRow = Owned & {
+  updated_at: string
+  name: string
+  category: string | null
+  body: string
 }
 type PromptReferenceRow = Owned & { prompt_id: string; reference_id: string }
 type ApiTokenRow = Owned & {
@@ -189,13 +211,15 @@ export type Database = {
         ]
       >
       vocabularies: Table<VocabularyRow, Insertable<VocabularyRow, "category" | "term"> & OwnedInsert>
-      prompts: Table<PromptRow, Insertable<PromptRow, "prompt_text"> & OwnedInsert>
+      prompts: Table<PromptRow, Insertable<Omit<PromptRow, "search_tsv">, "prompt_text"> & OwnedInsert>
       prompt_assets: Table<PromptAssetRow, Insertable<PromptAssetRow, "prompt_id" | "role"> & OwnedInsert>
       prompt_references: Table<
         PromptReferenceRow,
         Insertable<PromptReferenceRow, "prompt_id" | "reference_id"> & OwnedInsert
       >
       api_tokens: Table<ApiTokenRow, Insertable<ApiTokenRow, "name" | "token_hash" | "token_prefix"> & OwnedInsert>
+      prompt_projects: Table<PromptProjectRow, Insertable<PromptProjectRow, "prompt_id" | "project_id"> & OwnedInsert>
+      prompt_blocks: Table<PromptBlockRow, Insertable<PromptBlockRow, "name" | "body"> & OwnedInsert>
       search_queries: Table<SearchQueryRow, Insertable<SearchQueryRow, "kind" | "model" | "embedding"> & OwnedInsert>
     }
     Views: { [_ in never]: never }
@@ -259,6 +283,25 @@ export type Database = {
         }
         Returns: ReferenceRow[]
       }
+      search_prompts: {
+        Args: {
+          p_query?: string | null
+          p_tool?: string | null
+          p_model?: string | null
+          p_type?: Database["public"]["Enums"]["prompt_type"] | null
+          p_status?: Database["public"]["Enums"]["prompt_status"] | null
+          p_origin?: Database["public"]["Enums"]["prompt_origin"] | null
+          p_project_id?: string | null
+          p_tag?: string | null
+          p_templates?: boolean
+          p_latest_only?: boolean
+        }
+        Returns: PromptRow[]
+      }
+      prompt_tool_names: {
+        Args: Record<PropertyKey, never>
+        Returns: { field: "tool" | "model"; name: string; uses: number }[]
+      }
       find_near_duplicates: {
         Args: { p_phash: string; p_max_distance?: number; p_exclude?: string | null }
         Returns: {
@@ -299,6 +342,9 @@ export type TablesUpdate<T extends keyof PublicSchema["Tables"]> = PublicSchema[
 export type Enums<T extends keyof PublicSchema["Enums"]> = PublicSchema["Enums"][T]
 
 export type ApiToken = ApiTokenRow
+export type Prompt = PromptRow
+export type PromptAsset = PromptAssetRow
+export type PromptBlock = PromptBlockRow
 export type Reference = Tables<"references">
 export type ReferenceStatus = Enums<"reference_status">
 export type VocabCategory = Enums<"vocab_category">

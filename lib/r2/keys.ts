@@ -1,5 +1,5 @@
-// Object key layout: {ownerId}/{referenceId}/{file}, plus {ownerId}/profile/ and
-// {ownerId}/people/{personId}/. Keys are never exposed as public URLs.
+// Object key layout: {ownerId}/{referenceId}/{file}, plus {ownerId}/profile/,
+// {ownerId}/people/{personId}/ and {ownerId}/prompts/{promptId}/. Keys are never exposed as public URLs.
 
 const EXT_BY_MIME: Record<string, string> = {
   "image/jpeg": "jpg",
@@ -25,6 +25,12 @@ export const keys = {
   /** Profile picture; the timestamp busts caches when it is replaced. */
   avatar: (ownerId: string) => `${ownerId}/profile/avatar-${Date.now()}.webp`,
   personPhoto: (ownerId: string, personId: string) => `${ownerId}/people/${personId}/photo-${Date.now()}.webp`,
+  /** Results and inputs of a prompt entry (not references). */
+  promptPrefix: (ownerId: string, promptId: string) => `${ownerId}/prompts/${promptId}/`,
+  promptAsset: (ownerId: string, promptId: string, assetId: string, mime: string) =>
+    `${ownerId}/prompts/${promptId}/${assetId}.${extensionFor(mime)}`,
+  promptAssetThumb: (ownerId: string, promptId: string, assetId: string) =>
+    `${ownerId}/prompts/${promptId}/${assetId}-thumb.jpg`,
 }
 
 /** True when the key belongs to this owner (defense in depth for presign requests). */
