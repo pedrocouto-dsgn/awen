@@ -1,6 +1,6 @@
 "use client"
 
-import { ImagePlusIcon, LibraryIcon, Loader2Icon, PlayIcon, UploadIcon, XIcon } from "lucide-react"
+import { BookmarkPlusIcon, ImagePlusIcon, LibraryIcon, Loader2Icon, PlayIcon, UploadIcon, XIcon } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useEffect, useId, useRef, useState } from "react"
@@ -29,6 +29,8 @@ import {
 } from "@/lib/prompts/options"
 import { cn } from "@/lib/utils"
 
+import { BlockDialog } from "./block-dialog"
+import { BlockInserter } from "./block-inserter"
 import { ReferencePicker, type PickedReference } from "./reference-picker"
 import { addReferenceAsset, removeAsset, uploadPromptAsset, type AssetRole } from "./upload-asset"
 
@@ -62,6 +64,8 @@ type Props = {
   prompt: PromptView | null
   /** Creating a new version of this prompt (prefilled from it). */
   parent?: PromptView | null
+  /** Start from a filled-in template (its text with the values, its other fields). */
+  copyFrom?: PromptView | null
   /** Start as a template (from the "Modelos com variáveis" tab). */
   template?: boolean
   /** Preselected inspiring reference (from a reference's page). */
@@ -89,10 +93,10 @@ function draftFrom(p: PromptView | null | undefined): Draft {
   }
 }
 
-export function PromptForm({ prompt, parent, template = false, initialReference, suggestions, projects }: Props) {
+export function PromptForm({ prompt, parent, copyFrom, template = false, initialReference, suggestions, projects }: Props) {
   const router = useRouter()
   const uid = useId()
-  const source = prompt ?? parent ?? null
+  const source = prompt ?? parent ?? copyFrom ?? null
   const isVersion = !prompt && Boolean(parent)
 
   const [draft, setDraft] = useState<Draft>(() => ({
@@ -104,7 +108,7 @@ export function PromptForm({ prompt, parent, template = false, initialReference,
   const [assets, setAssets] = useState<FormAsset[]>(() =>
     prompt
       ? [...prompt.results, ...prompt.inputs].map((view) => ({ key: view.id, state: "saved", role: view.role, view }))
-      : (parent?.inputs ?? [])
+      : ((parent ?? copyFrom)?.inputs ?? [])
           .filter((v) => v.reference)
           .map((v) => ({
             key: v.id,
@@ -129,6 +133,27 @@ export function PromptForm({ prompt, parent, template = false, initialReference,
   const [dragOver, setDragOver] = useState<AssetRole | null>(null)
 
   const patch = (p: Partial<Draft>) => setDraft((d) => ({ ...d, ...p }))
+
+  const textRef = useRef<HTMLTextAreaElement>(null)
+  const [selection, setSelection] = useState("")
+  const [blockDraft, setBlockDraft] = useState<string | null>(null)
+
+  /** Inserts at the cursor (replacing any selection), on its own line when needed. */
+  function insertText(text: string) {
+    const el = textRef.current
+    const value = draft.prompt_text
+    const start = el?.selectionStart ?? value.length
+    const end = el?.selectionEnd ?? value.length
+    const before = value.slice(0, start)
+    const sep = before && !/\s$/.test(before) ? "\n" : ""
+    const next = `${before}${sep}${text}${value.slice(end)}`
+    patch({ prompt_text: next })
+    const caret = before.length + sep.length + text.length
+    requestAnimationFrame(() => {
+      el?.focus()
+      el?.setSelectionRange(caret, caret)
+    })
+  }
   const results = assets.filter((a) => a.role === "result")
   const inputs = assets.filter((a) => a.role === "input")
   const variables = draft.is_template ? templateVariables(draft.prompt_text) : []
@@ -319,12 +344,25 @@ export function PromptForm({ prompt, parent, template = false, initialReference,
         <Field label="Prompt" htmlFor={`${uid}-text`} hint={`${draft.prompt_text.length.toLocaleString("pt-BR")} caracteres`}>
           <Textarea
             id={`${uid}-text`}
+            ref={textRef}
             value={draft.prompt_text}
             onChange={(e) => patch({ prompt_text: e.target.value })}
+            onSelect={(e) => {
+              const t = e.currentTarget
+              setSelection(t.value.slice(t.selectionStart, t.selectionEnd).trim())
+            }}
             placeholder={draft.is_template ? "Use {variavel} nos trechos que mudam, ex.: A {subject} in {location}" : "Cole o prompt completo"}
             className="max-h-[60svh] min-h-64 font-mono text-[13px] leading-relaxed"
             autoFocus={!source}
           />
+          <div className="flex flex-wrap gap-2">
+            <BlockInserter onInsert={(b) => insertText(b.body)} />
+            {selection ? (
+              <Button type="button" variant="outline" size="xs" onClick={() => setBlockDraft(selection)}>
+                <BookmarkPlusIcon /> Salvar trecho como bloco
+              </Button>
+            ) : null}
+          </div>
         </Field>
 
         <label className="flex items-start gap-3 text-sm">
@@ -532,6 +570,12 @@ export function PromptForm({ prompt, parent, template = false, initialReference,
         </div>
       </div>
 
+      <BlockDialog
+        open={blockDraft !== null}
+        onOpenChange={(open) => !open && setBlockDraft(null)}
+        initialBody={blockDraft ?? ""}
+        onSaved={() => setSelection("")}
+      />
       <ReferencePicker
         open={picker !== null}
         onOpenChange={(open) => !open && setPicker(null)}

@@ -30,6 +30,9 @@ export const ORIGIN_LABEL: Record<PromptOrigin, string> = {
 export const DEFAULT_TOOLS = ["Magnific", "Runway", "Higgsfield"]
 export const DEFAULT_MODELS = ["Nano Banana", "GPT Image", "Seedream", "Kling", "Seedance", "Google Omni"]
 
+/** Suggested block categories; any other name works too. */
+export const BLOCK_CATEGORIES = ["Iluminação", "Câmera", "Materiais", "Estilo", "Personagem", "Cenário", "Áudio"]
+
 /** Optional generation parameters, stored in prompts.params. */
 export const PARAM_FIELDS = [
   { key: "aspect_ratio", label: "Proporção", placeholder: "16:9" },
@@ -66,8 +69,8 @@ export const promptFiltersSchema = z.object({
   origem: enumOf(ORIGIN_LABEL),
   projeto: z.uuid().optional().catch(undefined),
   tag: text(40),
-  /** "modelos": templates (prompts with {variables}) instead of regular prompts. */
-  aba: z.enum(["modelos"]).optional().catch(undefined),
+  /** "modelos": templates (prompts with {variables}); "blocos": reusable blocks. */
+  aba: z.enum(["modelos", "blocos"]).optional().catch(undefined),
 })
 
 export type PromptFilters = z.infer<typeof promptFiltersSchema>
@@ -107,4 +110,12 @@ export function templateVariables(text: string): string[] {
   const names = new Set<string>()
   for (const m of text.matchAll(/\{([a-zA-Z][\w-]{0,39})\}/g)) names.add(m[1]!)
   return [...names]
+}
+
+/** Fills {variables} in a template; unknown or empty ones stay as they are. */
+export function fillTemplate(text: string, values: Record<string, string>): string {
+  return text.replace(/\{([a-zA-Z][\w-]{0,39})\}/g, (match, name: string) => {
+    const v = values[name]?.trim()
+    return v ? v : match
+  })
 }

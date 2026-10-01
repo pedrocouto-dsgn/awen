@@ -100,3 +100,10 @@ export type PromptAssetCreateResponse = {
     thumb: { url: string; contentType: string }
   }
 }
+
+/** A reusable piece of prompt text (lighting setup, camera system, materials…). */
+export const promptBlockSchema = z.object({
+  name: z.string().trim().min(1, "Dê um nome ao bloco.").max(80),
+  category: optionalText(40),
+  body: z.string().trim().min(1, "O bloco está vazio.").max(50_000),
+})

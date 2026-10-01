@@ -3,7 +3,8 @@ import type { Metadata } from "next"
 
 import { EmptyState } from "@/components/shell/empty-state"
 import { PromptGrid } from "@/features/prompts/prompt-grid"
-import { PromptToolbar } from "@/features/prompts/prompt-toolbar"
+import { BlocksManager } from "@/features/prompts/blocks-manager"
+import { PromptTabs, PromptToolbar } from "@/features/prompts/prompt-toolbar"
 import { searchPrompts, toolSuggestions } from "@/lib/prompts/data"
 import { countPromptFilters, parsePromptFilters, promptFiltersToParams } from "@/lib/prompts/options"
 import { createClient } from "@/lib/supabase/server"
@@ -13,6 +14,20 @@ export const metadata: Metadata = { title: "Prompts" }
 export default async function PromptsPage({ searchParams }: PageProps<"/prompts">) {
   const filters = parsePromptFilters(await searchParams)
   const supabase = await createClient()
+
+  if (filters.aba === "blocos") {
+    const { data: blocks } = await supabase
+      .from("prompt_blocks")
+      .select("id, name, category, body")
+      .order("category", { nullsFirst: false })
+      .order("name")
+    return (
+      <div className="flex flex-col gap-5 px-3 py-4 md:px-5 md:py-5">
+        <PromptTabs current="blocos" />
+        <BlocksManager initialBlocks={blocks ?? []} />
+      </div>
+    )
+  }
 
   const [result, names, projects] = await Promise.all([
     searchPrompts(supabase, filters),

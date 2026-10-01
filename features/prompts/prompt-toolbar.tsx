@@ -74,31 +74,7 @@ export function PromptToolbar({
   return (
     <div className="flex flex-col gap-3">
       <div className="flex flex-wrap items-center gap-2">
-        <div className="flex rounded-full border border-glass-border bg-glass-hover p-0.5" role="tablist" aria-label="Tipo de entrada">
-          {(
-            [
-              [undefined, "Prompts"],
-              ["modelos", "Modelos com variáveis"],
-            ] as const
-          ).map(([value, label]) => {
-            const on = filters.aba === value
-            return (
-              <button
-                key={label}
-                type="button"
-                role="tab"
-                aria-selected={on}
-                onClick={() => apply({ aba: value })}
-                className={cn(
-                  "rounded-full px-3.5 py-1.5 text-sm transition-colors",
-                  on ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground",
-                )}
-              >
-                {label}
-              </button>
-            )
-          })}
-        </div>
+        <PromptTabs current={filters.aba} />
 
         <div className="relative max-w-md min-w-48 flex-1">
           <SearchIcon
@@ -213,6 +189,36 @@ export function PromptToolbar({
         </div>
       ) : null}
     </div>
+  )
+}
+
+const TABS = [
+  { aba: undefined, label: "Prompts", href: "/prompts" },
+  { aba: "modelos", label: "Modelos com variáveis", href: "/prompts?aba=modelos" },
+  { aba: "blocos", label: "Blocos", href: "/prompts?aba=blocos" },
+] as const
+
+/** Prompts · Modelos com variáveis · Blocos. Each tab starts without filters. */
+export function PromptTabs({ current }: { current: PromptFilters["aba"] }) {
+  return (
+    <nav className="flex w-fit rounded-full border border-glass-border bg-glass-hover p-0.5" aria-label="Biblioteca de prompts">
+      {TABS.map((t) => {
+        const on = current === t.aba
+        return (
+          <Link
+            key={t.label}
+            href={t.href}
+            aria-current={on ? "page" : undefined}
+            className={cn(
+              "rounded-full px-3.5 py-1.5 text-sm whitespace-nowrap transition-colors",
+              on ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground",
+            )}
+          >
+            {t.label}
+          </Link>
+        )
+      })}
+    </nav>
   )
 }
 

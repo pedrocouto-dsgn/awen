@@ -5,6 +5,7 @@ import {
   CopyIcon,
   ExternalLinkIcon,
   GitBranchPlusIcon,
+  GitCompareIcon,
   ImageOffIcon,
   MoreHorizontalIcon,
   PencilIcon,
@@ -25,6 +26,7 @@ import { ORIGIN_LABEL, PARAM_FIELDS, STATUS_LABEL, TYPE_LABEL } from "@/lib/prom
 import { cn } from "@/lib/utils"
 
 import { TemplateText } from "./prompt-grid"
+import { TemplateFiller } from "./template-filler"
 
 export function PromptDetail({ prompt }: { prompt: PromptView }) {
   const router = useRouter()
@@ -123,6 +125,8 @@ export function PromptDetail({ prompt }: { prompt: PromptView }) {
             </pre>
           </section>
 
+          {prompt.is_template ? <TemplateFiller templateId={prompt.id} text={prompt.prompt_text} /> : null}
+
           <dl className="grid grid-cols-2 gap-x-4 gap-y-4">
             <Item label="Modelo de IA">{prompt.model}</Item>
             <Item label="Ferramenta">{prompt.tool}</Item>
@@ -171,7 +175,16 @@ export function PromptDetail({ prompt }: { prompt: PromptView }) {
           ) : null}
 
           {prompt.versions.length > 1 ? (
-            <Block label="Versões">
+            <Block
+              label="Versões"
+              action={
+                <Button variant="outline" size="xs" asChild>
+                  <Link href={compareHref(prompt)}>
+                    <GitCompareIcon /> Comparar
+                  </Link>
+                </Button>
+              }
+            >
               <ol className="flex flex-col">
                 {prompt.versions.map((v) => (
                   <li key={v.id} className="border-b py-2 last:border-b-0">
@@ -332,11 +345,21 @@ function Item({ label, children }: { label: string; children: React.ReactNode })
   )
 }
 
-function Block({ label, children }: { label: string; children: React.ReactNode }) {
+function Block({ label, action, children }: { label: string; action?: React.ReactNode; children: React.ReactNode }) {
   return (
     <section className="flex flex-col gap-2">
-      <h2 className="type-label text-muted-foreground">{label}</h2>
+      <div className="flex items-center justify-between gap-2">
+        <h2 className="type-label text-muted-foreground">{label}</h2>
+        {action}
+      </div>
       {children}
     </section>
   )
+}
+
+/** This version against the one before it (v1 against v2). */
+function compareHref(prompt: PromptView) {
+  const i = prompt.versions.findIndex((v) => v.id === prompt.id)
+  const other = prompt.versions[i > 0 ? i - 1 : 1]!
+  return `/prompts/compare?a=${other.id}&b=${prompt.id}`
 }

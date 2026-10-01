@@ -7,9 +7,9 @@
 
   "currentPhase": "Fase 2 — Ferramentas de trabalho",
   "nextStep": {
-    "milestone": "M12b",
-    "title": "Comparar versões lado a lado, blocos reutilizáveis, preencher modelos com variáveis",
-    "notes": "Schema já aplicado na 0010 (prompts.version_note, prompts.is_template, tabela prompt_blocks). Só falta UI/API."
+    "milestone": "M12c",
+    "title": "Análise por IA dos prompts (tags e seções), busca por significado nos prompts, captura pela extensão",
+    "notes": "Precisa de migração nova (colunas de IA/embedding em prompts). Reaproveitar lib/ai (provedor + fallback) e o padrão de search_queries do M11."
   },
 
   "phases": {
@@ -60,8 +60,8 @@
           "status": "done",
           "commit": "8137012"
         },
-        { "id": "M12b", "title": "Comparar versões, blocos reutilizáveis, preencher modelos com variáveis", "status": "next" },
-        { "id": "M12c", "title": "Análise por IA dos prompts (tags e seções), busca por significado nos prompts, captura pela extensão", "status": "todo" },
+        { "id": "M12b", "title": "Comparar versões, blocos reutilizáveis, preencher modelos com variáveis", "status": "done", "commit": "PENDING" },
+        { "id": "M12c", "title": "Análise por IA dos prompts (tags e seções), busca por significado nos prompts, captura pela extensão", "status": "next" },
         { "id": "M13", "title": "Moodboard com exportação (PNG, PDF, imagens separadas)", "status": "todo" },
         { "id": "M14", "title": "Anotações sobre a imagem e conclusão do modo aleatório", "status": "todo" }
       ]
