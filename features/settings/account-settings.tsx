@@ -15,6 +15,7 @@ import type { NavUser } from "@/lib/shell/nav-data"
 import { cn } from "@/lib/utils"
 
 import { AvatarCropper } from "./avatar-cropper"
+import { Panel } from "./panel"
 
 /** "Conta" tab of the settings page: photo, name, password, theme, sign out. */
 export function AccountSettings({ user }: { user: NavUser }) {
@@ -31,18 +32,6 @@ export function AccountSettings({ user }: { user: NavUser }) {
         </div>
       </Panel>
     </div>
-  )
-}
-
-function Panel({ title, description, children }: { title: string; description?: string; children: React.ReactNode }) {
-  return (
-    <section className="glass flex flex-col gap-5 rounded-2xl p-6">
-      <header className="flex flex-col gap-1">
-        <h2 className="type-title-sm text-foreground">{title}</h2>
-        {description ? <p className="text-sm text-muted-foreground">{description}</p> : null}
-      </header>
-      {children}
-    </section>
   )
 }
 

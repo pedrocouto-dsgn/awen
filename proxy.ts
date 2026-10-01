@@ -8,7 +8,8 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    // Everything except static assets, image optimization, metadata files and the cron endpoint.
-    "/((?!_next/static|_next/image|favicon.ico|robots.txt|api/cron|.*\\.(?:svg|png|jpg|jpeg|gif|webp|avif|ico)$).*)",
+    // Everything except static assets, image optimization, metadata files, the cron
+    // endpoint and the extension API (token auth, no session cookies).
+    "/((?!_next/static|_next/image|favicon.ico|robots.txt|api/cron|api/ext|.*\\.(?:svg|png|jpg|jpeg|gif|webp|avif|ico)$).*)",
   ],
 }

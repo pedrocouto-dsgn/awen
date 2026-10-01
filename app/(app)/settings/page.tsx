@@ -1,11 +1,14 @@
 import type { Metadata } from "next"
+import { headers } from "next/headers"
 import Link from "next/link"
 
 import { PageBreadcrumb } from "@/components/shell/page-breadcrumb"
 import { AccountSettings } from "@/features/settings/account-settings"
+import { ExtensionSettings } from "@/features/settings/extension-settings"
 import { VocabularyEditor } from "@/features/settings/vocabulary-editor"
 import { getVocabularies } from "@/lib/references/vocab"
 import { getNavData } from "@/lib/shell/nav-data"
+import { toTokenView, TOKEN_COLUMNS } from "@/lib/validation/ext"
 import { createClient } from "@/lib/supabase/server"
 import type { VocabCategory } from "@/types/database"
 
@@ -14,11 +17,32 @@ export const metadata: Metadata = { title: "Configurações" }
 const TABS = [
   { key: "conta", label: "Conta" },
   { key: "filtros", label: "Filtros" },
+  { key: "extensao", label: "Extensão" },
 ] as const
 
+type TabKey = (typeof TABS)[number]["key"]
+
 export default async function SettingsPage({ searchParams }: PageProps<"/settings">) {
-  const tab = (await searchParams).aba === "filtros" ? "filtros" : "conta"
+  const requested = (await searchParams).aba
+  const tab: TabKey = TABS.find((t) => t.key === requested)?.key ?? "conta"
   const supabase = await createClient()
+
+  if (tab === "extensao") {
+    const h = await headers()
+    const host = h.get("x-forwarded-host") ?? h.get("host") ?? "localhost:3000"
+    const proto = h.get("x-forwarded-proto") ?? (host.startsWith("localhost") ? "http" : "https")
+    const { data, error } = await supabase
+      .from("api_tokens")
+      .select(TOKEN_COLUMNS)
+      .is("revoked_at", null)
+      .order("created_at", { ascending: false })
+    if (error) throw error
+    return (
+      <SettingsShell tab={tab} description="Salve imagens, vídeos e páginas direto do Chrome, com um clique.">
+        <ExtensionSettings tokens={(data ?? []).map(toTokenView)} appUrl={`${proto}://${host}`} />
+      </SettingsShell>
+    )
+  }
 
   if (tab === "conta") {
     const { user } = await getNavData(supabase)

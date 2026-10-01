@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <title>Awen</title>
+    <link rel="stylesheet" href="styles.css" />
+    <style>
+      body { width: 300px; padding: 16px; }
+    </style>
+  </head>
+  <body class="stack">
+    <div class="row" style="justify-content: space-between">
+      <h1>Awen</h1>
+      <a id="open-app" href="#" class="muted">Abrir</a>
+    </div>
+    <div id="account" class="card stack">
+      <p class="muted">Carregando…</p>
+    </div>
+    <button id="save-page" disabled>Salvar esta página</button>
+    <button id="save-page-project" class="ghost" hidden>Salvar no projeto</button>
+    <p id="status" class="status"></p>
+    <p class="muted">Clique com o botão direito numa imagem ou vídeo para salvar só a mídia.</p>
+    <a id="options" href="#" class="muted">Opções</a>
+    <script type="module" src="popup.js"></script>
+  </body>
+</html>

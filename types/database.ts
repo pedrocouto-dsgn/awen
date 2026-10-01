@@ -111,6 +111,13 @@ type PromptAssetRow = Owned & {
   role: Database["public"]["Enums"]["prompt_asset_role"]
 }
 type PromptReferenceRow = Owned & { prompt_id: string; reference_id: string }
+type ApiTokenRow = Owned & {
+  name: string
+  token_hash: string
+  token_prefix: string
+  last_used_at: string | null
+  revoked_at: string | null
+}
 
 type Rel = {
   foreignKeyName: string
@@ -180,6 +187,7 @@ export type Database = {
         PromptReferenceRow,
         Insertable<PromptReferenceRow, "prompt_id" | "reference_id"> & OwnedInsert
       >
+      api_tokens: Table<ApiTokenRow, Insertable<ApiTokenRow, "name" | "token_hash" | "token_prefix"> & OwnedInsert>
     }
     Views: { [_ in never]: never }
     Functions: {
@@ -276,6 +284,7 @@ export type TablesInsert<T extends keyof PublicSchema["Tables"]> = PublicSchema[
 export type TablesUpdate<T extends keyof PublicSchema["Tables"]> = PublicSchema["Tables"][T]["Update"]
 export type Enums<T extends keyof PublicSchema["Enums"]> = PublicSchema["Enums"][T]
 
+export type ApiToken = ApiTokenRow
 export type Reference = Tables<"references">
 export type ReferenceStatus = Enums<"reference_status">
 export type VocabCategory = Enums<"vocab_category">

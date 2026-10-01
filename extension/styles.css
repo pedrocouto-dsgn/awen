@@ -1,0 +1,53 @@
+/* Awen extension: graphite structure, frost primary action (awen-DESIGN.md). */
+:root {
+  color-scheme: dark;
+  --bg: #111111;
+  --surface: #1a1c1e;
+  --border: #3a3a3a;
+  --muted: #b7babb;
+  --text: #f2f4f5;
+  --frost: #cadcea;
+  --steel: #4b708d;
+  --danger: #ff8a80;
+  --ok: #8fd4b0;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: radial-gradient(120% 80% at 50% 0%, #1e3a52 0%, var(--bg) 60%);
+  color: var(--text);
+  font: 13px/1.5 Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+h1 { margin: 0; font-size: 18px; font-weight: 600; letter-spacing: -0.01em; }
+p { margin: 0; }
+.muted { color: var(--muted); }
+.card { background: rgba(26, 28, 30, 0.8); border: 1px solid var(--border); border-radius: 12px; padding: 14px; }
+.stack { display: flex; flex-direction: column; gap: 12px; }
+label { display: flex; flex-direction: column; gap: 6px; color: var(--muted); font-size: 12px; }
+input {
+  width: 100%;
+  padding: 9px 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #0c0d0e;
+  color: var(--text);
+  font: inherit;
+}
+input:focus { outline: 2px solid var(--steel); outline-offset: 1px; }
+button {
+  padding: 9px 14px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: var(--frost);
+  color: #111111;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+button.ghost { background: transparent; border-color: var(--border); color: var(--text); font-weight: 500; }
+button:disabled { opacity: 0.5; cursor: default; }
+.row { display: flex; gap: 8px; align-items: center; }
+.status { font-size: 12px; min-height: 18px; }
+.status.ok { color: var(--ok); }
+.status.error { color: var(--danger); }
+a { color: var(--frost); }

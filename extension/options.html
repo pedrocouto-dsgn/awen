@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <title>Awen · Opções</title>
+    <link rel="stylesheet" href="styles.css" />
+    <style>
+      body { min-height: 100vh; padding: 48px 16px; }
+      main { max-width: 480px; margin: 0 auto; }
+    </style>
+  </head>
+  <body>
+    <main class="stack">
+      <h1>Awen · Opções</h1>
+      <p class="muted">
+        Gere um token no Awen, em Configurações → Extensão, e cole-o aqui. O token fica guardado só neste navegador.
+      </p>
+      <form id="form" class="card stack">
+        <label>
+          Endereço do Awen
+          <input id="app-url" type="url" required placeholder="https://awen-theta.vercel.app" />
+        </label>
+        <label>
+          Token
+          <input id="token" type="password" required placeholder="awen_…" autocomplete="off" />
+        </label>
+        <div class="row">
+          <button type="submit">Salvar e testar</button>
+        </div>
+        <p id="status" class="status"></p>
+      </form>
+    </main>
+    <script type="module" src="options.js"></script>
+  </body>
+</html>

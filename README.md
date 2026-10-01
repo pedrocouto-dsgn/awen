@@ -22,7 +22,7 @@ A private creative reference bank for AI-driven video and photography: collect i
 | **Projects** | A reference can sit in several projects; one project can be active (top-bar chip, **P** shortcut). Canvas position columns are stored for the future moodboard. |
 | **Settings** | Edit vocabularies: add, rename (updates every reference using the term), archive/restore, reorder. |
 
-Out of scope for Phase 1 (the schema is ready): prompt library UI, Chrome extension, semantic/image-similarity search (`references.embedding`), moodboard canvas and export, random mode, folder autosync, bulk import.
+**Phase 2 (in progress):** AI provider adapter with automatic fallback and multimodal embeddings (M9), Chrome extension (M10). Next: semantic/image-similarity search UI, prompt library, moodboard with export, image annotations.
 
 ---
 
@@ -39,6 +39,7 @@ Out of scope for Phase 1 (the schema is ready): prompt library UI, Chrome extens
 | `…000005_people_photo.sql` | `people.photo_key` for the artist banner. |
 | `…000006_embeddings.sql` | Embedding bookkeeping columns, `reset_embedding` trigger (approval or text edits clear the vector), `next_embedding_batch`, HNSW cosine index. |
 | `…000007_fix_reset_embedding.sql` | Fixes the 0006 trigger (it failed every update on `references` because of the empty `search_path`). |
+| `…000008_api_tokens.sql` | Personal API tokens for the Chrome extension (only the SHA-256 hash is stored), plus the few `service_role` grants extension requests need. |
 
 **SQL editor (simplest):** Supabase Dashboard → SQL Editor → paste each file's contents **in order** → *Run*.
 
@@ -121,7 +122,23 @@ Analysis goes through a provider adapter (`lib/ai`). Every provider gets the sam
 
 ---
 
-## 4. Environment variables
+## 4. Chrome extension
+
+The `extension/` folder is a Manifest V3 extension (plain JavaScript, no build step), installed in developer mode.
+
+1. Awen → **Configurações → Extensão** → *Gerar token*. The token is shown once; only its hash is stored. Revoke it there at any time.
+2. `chrome://extensions` → turn on **Developer mode** → **Load unpacked** → choose the `extension/` folder.
+3. Extension options: paste the Awen address (e.g. `https://awen-theta.vercel.app`) and the token → *Salvar e testar*.
+
+**Use:** right-click an image, a video, a link or the page → **Salvar no Awen**. When a project is active, the menu also offers **Salvar no projeto: …**. The popup shows the account and active project and saves the current page.
+
+**How it saves.** Images are downloaded by the extension (with the browser's cookies, so Pinterest/Instagram CDNs work), uploaded straight to R2 with a presigned URL, and the server derives thumbnail, palette and fingerprint (`/api/ext/references` → PUT → `/api/ext/references/:id/finalize`). If an image cannot be downloaded, the page is saved as a link instead. Videos, links and pages go through the same resolver as pasted links (YouTube/Vimeo embed, Open Graph preview). Everything enters the analysis queue like any other reference.
+
+**Security.** Extension routes authenticate with `Authorization: Bearer awen_…`, never cookies, and are excluded from the session proxy. They have no Supabase session, so they use the secret-key client and scope every query to the token owner in code (`lib/ext`). The extension asks for `<all_urls>` host access because it downloads images from any site and uploads them to R2.
+
+---
+
+## 5. Environment variables
 
 Copy `.env.example` to `.env.local` for local development. Set the same variables in Vercel.
 
@@ -147,7 +164,7 @@ Variables without the `NEXT_PUBLIC_` prefix never reach the browser. `lib/env/*`
 
 ---
 
-## 5. Local development
+## 6. Local development
 
 ```bash
 npm install
@@ -159,10 +176,10 @@ Checks: `npm run typecheck`, `npm run lint`, `npm run build`.
 
 ---
 
-## 6. Deploy on Vercel (free plan)
+## 7. Deploy on Vercel (free plan)
 
 1. Push the repo to GitHub and **Import** it in Vercel (framework: Next.js; defaults are fine).
-2. **Settings → Environment Variables:** add every variable from section 4 (Production and Preview).
+2. **Settings → Environment Variables:** add every variable from section 5 (Production and Preview).
 3. **Region:** `vercel.json` pins functions to **Dublin (`dub1`)**, next to the Supabase project in `eu-west-1`. Check Settings → Functions → Function Region shows `dub1`.
 4. **Cron:** `vercel.json` registers `GET /api/cron/analysis` daily at 06:00 UTC (Hobby allows one run per day). Vercel adds `Authorization: Bearer $CRON_SECRET` automatically once `CRON_SECRET` is set.
 5. Deploy, then make sure Supabase **Site URL / Redirect URLs** and the R2 **CORS** list include the production domain (`https://awen.vercel.app`).
@@ -191,12 +208,14 @@ Components only use tokens. To restyle, edit the token values.
 app/
   (auth)/            login, forgot/set password
   (app)/             library, review, people, projects, settings (+ loading/error/not-found)
-  api/               references, uploads, links, analysis, library, people, projects, vocabularies, cron
+  api/               references, uploads, links, analysis, library, people, projects, vocabularies, tokens, cron
+  api/ext/           Chrome extension API (token auth)
   auth/confirm/      email link landing (token_hash and PKCE code)
 features/            ingest, analysis, review, library, media, references, people, projects, settings, auth
 lib/
-  env/  supabase/  r2/  gemini/  analysis/  palette/  phash/  links/  library/  references/  media/  validation/
+  env/  supabase/  r2/  ai/  analysis/  ext/  ingest/  palette/  phash/  links/  library/  references/  media/  validation/
 components/          ui (shadcn, token-only), shell (sidebar, top bar, empty/confirm), brand
+extension/           Chrome extension (Manifest V3, load unpacked)
 supabase/migrations/ SQL, applied in order
 types/database.ts    supabase-js types mirroring the migrations
 ```
