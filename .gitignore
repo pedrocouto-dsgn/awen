@@ -42,3 +42,4 @@ supabase/.branches/
 npm-debug.log*
 .idea/
 .vscode/
+.vercel
