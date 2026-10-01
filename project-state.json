@@ -3,7 +3,7 @@
   "project": "Awen",
   "summary": "Banco de referências pessoal para direção criativa: imagens, vídeos e prompts, com análise por IA e aprovação manual.",
   "updatedAt": "2026-10-01",
-  "lastCommit": "8137012",
+  "lastCommit": "44b8094",
 
   "currentPhase": "Fase 2 — Ferramentas de trabalho",
   "nextStep": {
@@ -60,7 +60,7 @@
           "status": "done",
           "commit": "8137012"
         },
-        { "id": "M12b", "title": "Comparar versões, blocos reutilizáveis, preencher modelos com variáveis", "status": "done", "commit": "PENDING" },
+        { "id": "M12b", "title": "Comparar versões, blocos reutilizáveis, preencher modelos com variáveis", "status": "done", "commit": "44b8094" },
         { "id": "M12c", "title": "Análise por IA dos prompts (tags e seções), busca por significado nos prompts, captura pela extensão", "status": "next" },
         { "id": "M13", "title": "Moodboard com exportação (PNG, PDF, imagens separadas)", "status": "todo" },
         { "id": "M14", "title": "Anotações sobre a imagem e conclusão do modo aleatório", "status": "todo" }
