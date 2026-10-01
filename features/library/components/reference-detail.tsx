@@ -1,6 +1,15 @@
 "use client"
 
-import { ArrowLeftIcon, InboxIcon, Loader2Icon, MoreHorizontalIcon, PencilIcon, Trash2Icon } from "lucide-react"
+import {
+  ArrowLeftIcon,
+  InboxIcon,
+  Loader2Icon,
+  MoreHorizontalIcon,
+  PencilIcon,
+  SparklesIcon,
+  Trash2Icon,
+} from "lucide-react"
+import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useCallback, useEffect, useState } from "react"
 import { toast } from "sonner"
@@ -202,9 +211,18 @@ export function ReferenceDetail({
                 </Button>
               </>
             ) : (
-              <Button variant="outline" size="sm" onClick={() => setEditing(true)}>
-                <PencilIcon /> Editar
-              </Button>
+              <>
+                {reference.status === "approved" ? (
+                  <Button variant="ghost" size="sm" asChild>
+                    <Link href={`/library?parecida=${reference.id}`}>
+                      <SparklesIcon /> Parecidas
+                    </Link>
+                  </Button>
+                ) : null}
+                <Button variant="outline" size="sm" onClick={() => setEditing(true)}>
+                  <PencilIcon /> Editar
+                </Button>
+              </>
             )}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>

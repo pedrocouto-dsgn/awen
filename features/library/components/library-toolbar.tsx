@@ -1,12 +1,11 @@
 "use client"
 
-import { Loader2Icon, SearchIcon, SlidersHorizontalIcon, XIcon } from "lucide-react"
+import { Loader2Icon, SlidersHorizontalIcon, XIcon } from "lucide-react"
 import { usePathname, useRouter } from "next/navigation"
 import { useEffect, useRef, useState, useTransition } from "react"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import {
@@ -17,7 +16,10 @@ import {
   SOURCE_OPTIONS,
   type LibraryFilters,
 } from "@/lib/library/filters"
+import type { VisualSearch } from "@/lib/library/search"
 import { cn } from "@/lib/utils"
+
+import { SearchBox } from "./search-box"
 
 export type FilterOptions = {
   shotTypes: string[]
@@ -34,7 +36,16 @@ const COLOR_PRESETS = [
 
 const ANY = "__any__"
 
-export function LibraryToolbar({ filters, options, total }: { filters: LibraryFilters; options: FilterOptions; total: number }) {
+type Props = {
+  filters: LibraryFilters
+  options: FilterOptions
+  total: number
+  visual: VisualSearch | null
+  /** False when a text query could only be matched word for word (AI unavailable). */
+  semantic: boolean | null
+}
+
+export function LibraryToolbar({ filters, options, total, visual, semantic }: Props) {
   const router = useRouter()
   const pathname = usePathname()
   const [pending, startTransition] = useTransition()
@@ -54,7 +65,11 @@ export function LibraryToolbar({ filters, options, total }: { filters: LibraryFi
   function onSearch(value: string) {
     setQ(value)
     if (debounce.current) clearTimeout(debounce.current)
-    debounce.current = setTimeout(() => apply({ q: value.trim() || undefined }), 350)
+    // Typing replaces a search by image. Each new query is embedded once, so wait for a pause.
+    debounce.current = setTimeout(
+      () => apply({ q: value.trim() || undefined, parecida: undefined, imagem: undefined }),
+      500,
+    )
   }
 
   const toggle = (key: "plano" | "clima" | "luz" | "fonte", value: string) => {
@@ -82,17 +97,16 @@ export function LibraryToolbar({ filters, options, total }: { filters: LibraryFi
   return (
     <div className="flex flex-col gap-3">
       <div className="flex items-center gap-2">
-        <div className="relative max-w-md flex-1">
-          <SearchIcon className="pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden />
-          <Input
-            type="search"
-            value={q}
-            onChange={(e) => onSearch(e.target.value)}
-            placeholder="Buscar em descrições, tags e notas"
-            aria-label="Buscar"
-            className="h-11 bg-card pl-10"
-          />
-        </div>
+        <SearchBox
+          query={q}
+          onQueryChange={onSearch}
+          visual={visual}
+          onVisual={(search) => {
+            setQ("")
+            if (debounce.current) clearTimeout(debounce.current)
+            apply({ q: undefined, parecida: undefined, imagem: undefined, ...search })
+          }}
+        />
 
         <Sheet>
           <SheetTrigger asChild>
@@ -186,6 +200,20 @@ export function LibraryToolbar({ filters, options, total }: { filters: LibraryFi
           {total} {total === 1 ? "referência" : "referências"}
         </p>
       </div>
+
+      {semantic === false ? (
+        <p className="text-xs text-muted-foreground">
+          A busca por significado está indisponível agora (limite da IA). Mostrando só o que tem estas palavras.
+        </p>
+      ) : null}
+      {visual?.kind === "similar" && !visual.indexed ? (
+        <p className="text-xs text-muted-foreground">
+          Esta referência ainda não foi indexada para a busca. Isso acontece sozinho logo depois da aprovação.
+        </p>
+      ) : null}
+      {visual?.kind === "image" && !visual.previewUrl ? (
+        <p className="text-xs text-muted-foreground">Esta busca por imagem expirou. Arraste a imagem de novo.</p>
+      ) : null}
 
       {chips.length > 0 || filters.cor ? (
         <div className="flex flex-wrap items-center gap-1.5">

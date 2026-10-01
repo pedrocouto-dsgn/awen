@@ -36,6 +36,16 @@ export async function embedDocuments(docs: EmbeddingDocument[]): Promise<number[
   return embed(contents, "RETRIEVAL_DOCUMENT")
 }
 
+/** Vector for an image used as a search query ("find references like this"). */
+export async function embedImageQuery(image: Uint8Array): Promise<number[]> {
+  const [vector] = await embed(
+    [{ parts: [{ inlineData: { data: Buffer.from(image).toString("base64"), mimeType: "image/jpeg" } }] }],
+    "RETRIEVAL_QUERY",
+  )
+  if (!vector) throw new RetryableAnalysisError("Empty embedding response.")
+  return vector
+}
+
 /** Vector for a natural-language search query. */
 export async function embedQuery(query: string): Promise<number[]> {
   const [vector] = await embed([{ parts: [{ text: query }] }], "RETRIEVAL_QUERY")

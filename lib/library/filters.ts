@@ -59,6 +59,10 @@ export const libraryFiltersSchema = z.object({
     .regex(/^[0-9a-f]{6}$/i)
     .optional()
     .catch(undefined),
+  /** "Parecidas": neighbours of this reference. */
+  parecida: z.uuid().optional().catch(undefined),
+  /** Search by an image dropped on the search box (search_queries id). */
+  imagem: z.uuid().optional().catch(undefined),
 })
 
 export type LibraryFilters = z.infer<typeof libraryFiltersSchema>
@@ -90,7 +94,14 @@ export function filtersToParams(f: LibraryFilters): URLSearchParams {
   if (f.desde) p.set("desde", f.desde)
   if (f.nota) p.set("nota", String(f.nota))
   if (f.cor) p.set("cor", f.cor.toLowerCase())
+  if (f.parecida) p.set("parecida", f.parecida)
+  if (f.imagem) p.set("imagem", f.imagem)
   return p
+}
+
+/** Searching by image (an existing reference or a dropped file) instead of by text. */
+export function isVisualSearch(f: LibraryFilters): boolean {
+  return Boolean(f.parecida || f.imagem)
 }
 
 export function countActiveFilters(f: LibraryFilters): number {

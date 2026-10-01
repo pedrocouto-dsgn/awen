@@ -6,7 +6,10 @@ import { VIEW_TTL_SECONDS } from "@/lib/references/view"
 import type { ServerSupabase } from "@/lib/supabase/server"
 import type { Reference } from "@/types/database"
 
-import { ASPECT_BUCKETS, SINCE_OPTIONS, type LibraryFilters } from "./filters"
+import { embeddingModel } from "@/lib/ai/embeddings"
+
+import { ASPECT_BUCKETS, isVisualSearch, SINCE_OPTIONS, type LibraryFilters } from "./filters"
+import { isSemanticQuery, TEXT_SEARCH, textQueryVector, VISUAL_SEARCH } from "./query-vectors"
 
 export const PAGE_SIZE = 48
 const COLOR_MAX_DISTANCE = 25
@@ -37,7 +40,19 @@ export async function searchLibrary(
   supabase: ServerSupabase,
   filters: LibraryFilters,
   offset = 0,
-): Promise<{ cards: LibraryCard[]; total: number; nextOffset: number | null }> {
+): Promise<{
+  cards: LibraryCard[]
+  total: number
+  nextOffset: number | null
+  /** Text query searched by meaning (true), or only by words because embeddings were unavailable (false). */
+  semantic: boolean | null
+}> {
+  // Searching by image replaces the text query (the box shows the image instead).
+  const visual = isVisualSearch(filters)
+  const query = visual ? null : (filters.q ?? null)
+  const queryVector = filters.imagem ?? (query ? await textQueryVector(supabase, query) : null)
+  const cutoff = visual ? VISUAL_SEARCH : TEXT_SEARCH
+
   const aspect = filters.formato ? ASPECT_BUCKETS[filters.formato] : null
   const since = filters.desde
     ? new Date(Date.now() - SINCE_OPTIONS[filters.desde].days * 86_400_000).toISOString()
@@ -48,7 +63,7 @@ export async function searchLibrary(
     .rpc(
       "search_references",
       {
-        p_query: filters.q ?? null,
+        p_query: query,
         p_shot_types: filters.plano.length ? filters.plano : null,
         p_moods: filters.clima.length ? filters.clima : null,
         p_lighting: filters.luz.length ? filters.luz : null,
@@ -63,6 +78,11 @@ export async function searchLibrary(
         p_color_lab: lab,
         p_color_max_distance: COLOR_MAX_DISTANCE,
         p_status: "approved",
+        p_query_vector: queryVector,
+        p_similar_to: filters.parecida ?? null,
+        p_embedding_model: embeddingModel(),
+        p_max_distance: cutoff.maxDistance,
+        p_distance_margin: cutoff.margin,
       },
       { count: "exact" },
     )
@@ -122,5 +142,41 @@ export async function searchLibrary(
 
   const total = count ?? cards.length
   const next = offset + cards.length
-  return { cards, total, nextOffset: next < total ? next : null }
+  return {
+    cards,
+    total,
+    nextOffset: next < total ? next : null,
+    semantic: query && isSemanticQuery(query) ? queryVector !== null : null,
+  }
+}
+
+/** What the library is searching by when the query is an image, for the chip above the results. */
+export type VisualSearch =
+  | { kind: "similar"; id: string; title: string | null; thumbUrl: string | null; indexed: boolean }
+  | { kind: "image"; previewUrl: string | null }
+
+export async function describeVisualSearch(
+  supabase: ServerSupabase,
+  filters: LibraryFilters,
+): Promise<VisualSearch | null> {
+  if (filters.imagem) {
+    const { data } = await supabase.from("search_queries").select("preview").eq("id", filters.imagem).maybeSingle()
+    return { kind: "image", previewUrl: data?.preview ?? null }
+  }
+  if (filters.parecida) {
+    const { data } = await supabase
+      .from("references")
+      .select("id, title, thumbnail_key, embedding_model")
+      .eq("id", filters.parecida)
+      .maybeSingle()
+    if (!data) return null
+    return {
+      kind: "similar",
+      id: data.id,
+      title: data.title,
+      thumbUrl: data.thumbnail_key ? await presignGet(data.thumbnail_key, VIEW_TTL_SECONDS) : null,
+      indexed: data.embedding_model !== null && data.embedding_model === embeddingModel(),
+    }
+  }
+  return null
 }

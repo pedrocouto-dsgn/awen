@@ -6,6 +6,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
+import { REFERENCE_DRAG_TYPE } from "@/lib/library/drag"
 import type { LibraryCard } from "@/lib/library/search"
 import type { ActiveProject } from "@/lib/references/links"
 import { cn } from "@/lib/utils"
@@ -225,6 +226,8 @@ function Pin({
         <Link
           href={`/library/${card.id}`}
           aria-label={card.title ?? "Abrir referência"}
+          // Dropped on the library search box, a card shows its similar references.
+          onDragStart={(e) => e.dataTransfer.setData(REFERENCE_DRAG_TYPE, card.id)}
           className="relative block overflow-hidden rounded-2xl bg-media"
           style={{ aspectRatio: String(cardRatio(card)), backgroundColor: card.palette[0]?.hex }}
         >

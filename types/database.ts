@@ -119,6 +119,14 @@ type ApiTokenRow = Owned & {
   revoked_at: string | null
 }
 
+type SearchQueryRow = Owned & {
+  kind: "text" | "image"
+  text_key: string | null
+  model: string
+  embedding: string
+  preview: string | null
+}
+
 type Rel = {
   foreignKeyName: string
   columns: string[]
@@ -188,6 +196,7 @@ export type Database = {
         Insertable<PromptReferenceRow, "prompt_id" | "reference_id"> & OwnedInsert
       >
       api_tokens: Table<ApiTokenRow, Insertable<ApiTokenRow, "name" | "token_hash" | "token_prefix"> & OwnedInsert>
+      search_queries: Table<SearchQueryRow, Insertable<SearchQueryRow, "kind" | "model" | "embedding"> & OwnedInsert>
     }
     Views: { [_ in never]: never }
     Functions: {
@@ -242,6 +251,11 @@ export type Database = {
           p_color_lab?: number[] | null
           p_color_max_distance?: number | null
           p_status?: Database["public"]["Enums"]["reference_status"]
+          p_query_vector?: string | null
+          p_similar_to?: string | null
+          p_embedding_model?: string | null
+          p_max_distance?: number | null
+          p_distance_margin?: number | null
         }
         Returns: ReferenceRow[]
       }

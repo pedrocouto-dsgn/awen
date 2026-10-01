@@ -3,6 +3,8 @@
 import { UploadIcon } from "lucide-react"
 import { useEffect, useRef, useState } from "react"
 
+import { LOCAL_DROP_ATTR, REFERENCE_DRAG_TYPE } from "@/lib/library/drag"
+
 import { useIngest } from "../ingest-provider"
 
 function looksLikeUrl(text: string): boolean {
@@ -20,11 +22,18 @@ function isEditable(target: EventTarget | null): boolean {
 export function GlobalDropPaste() {
   const { addFiles, addLink, dialogOpen } = useIngest()
   const [dragging, setDragging] = useState(false)
+  // Over an element with its own drop handling (the library search box): no overlay.
+  const [overLocal, setOverLocal] = useState(false)
   const depth = useRef(0)
 
   useEffect(() => {
+    // Cards dragged inside the app are not new files or links.
     const hasPayload = (e: DragEvent) =>
-      Boolean(e.dataTransfer?.types.some((t) => t === "Files" || t === "text/uri-list"))
+      Boolean(
+        e.dataTransfer &&
+          !e.dataTransfer.types.includes(REFERENCE_DRAG_TYPE) &&
+          e.dataTransfer.types.some((t) => t === "Files" || t === "text/uri-list"),
+      )
 
     const onDragEnter = (e: DragEvent) => {
       if (!hasPayload(e) || dialogOpen) return
@@ -32,7 +41,9 @@ export function GlobalDropPaste() {
       setDragging(true)
     }
     const onDragOver = (e: DragEvent) => {
-      if (hasPayload(e)) e.preventDefault()
+      if (!hasPayload(e)) return
+      e.preventDefault()
+      setOverLocal(e.target instanceof Element && e.target.closest(`[${LOCAL_DROP_ATTR}]`) !== null)
     }
     const onDragLeave = () => {
       depth.current = Math.max(0, depth.current - 1)
@@ -41,7 +52,8 @@ export function GlobalDropPaste() {
     const onDrop = (e: DragEvent) => {
       depth.current = 0
       setDragging(false)
-      if (!e.dataTransfer || dialogOpen) return
+      setOverLocal(false)
+      if (!e.dataTransfer || dialogOpen || !hasPayload(e)) return
       e.preventDefault()
       if (e.dataTransfer.files.length > 0) {
         addFiles(e.dataTransfer.files)
@@ -80,7 +92,7 @@ export function GlobalDropPaste() {
     }
   }, [addFiles, addLink, dialogOpen])
 
-  if (!dragging) return null
+  if (!dragging || overLocal) return null
   return (
     <div className="pointer-events-none fixed inset-0 z-50 flex items-center justify-center bg-overlay p-6">
       <div className="glass-strong flex flex-col items-center gap-3 rounded-2xl border-dashed border-ring px-12 py-10 text-center">
