@@ -3,7 +3,7 @@
   "project": "Awen",
   "summary": "Banco de referências pessoal para direção criativa: imagens, vídeos e prompts, com análise por IA e aprovação manual.",
   "updatedAt": "2026-10-01",
-  "lastCommit": "bd03673",
+  "lastCommit": "549fcd7",
 
   "currentPhase": "Fase 2 — Ferramentas de trabalho",
   "nextStep": {
@@ -51,7 +51,7 @@
           "id": "M11",
           "title": "Busca por linguagem natural e por imagem parecida (UI)",
           "status": "done",
-          "commit": "PENDING",
+          "commit": "549fcd7",
           "notes": "Cortes de distância em lib/library/query-vectors.ts (texto 0.65 + margem 0.05; visual 0.32 + margem 0.15), calibrados com só 6 referências: revisar quando a biblioteca crescer."
         },
         { "id": "M12", "title": "Biblioteca de prompts completa (versões, blocos, modelos com variáveis)", "status": "next" },
