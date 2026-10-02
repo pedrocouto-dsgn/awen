@@ -23,6 +23,25 @@ export const extSaveSchema = z.discriminatedUnion("kind", [
 
 export type ExtSaveInput = z.infer<typeof extSaveSchema>
 
+/** Someone else's prompt (text selected on a page) together with its result image. */
+export const extPromptSchema = z.object({
+  promptText: z.string().trim().min(1).max(200_000),
+  pageUrl: optionalUrl,
+  pageTitle: z.string().max(500).optional(),
+  image: z.object({
+    mimeType: z.enum(IMAGE_MIME_TYPES),
+    size: z.number().int().positive().max(LIMITS.imageBytes),
+  }),
+})
+
+export type ExtPromptInput = z.infer<typeof extPromptSchema>
+
+export type ExtPromptResponse = {
+  promptId: string
+  assetId: string
+  upload: { url: string; contentType: string }
+}
+
 export type ExtSaveResponse = {
   referenceId: string
   /** Present for images: PUT the bytes here, then call finalize. */

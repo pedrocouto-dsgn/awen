@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Switch } from "@/components/ui/switch"
 import { Textarea } from "@/components/ui/textarea"
+import { useOptionalAnalysis } from "@/features/analysis/analysis-provider"
 import { apiJson } from "@/features/ingest/upload"
 import { TagInput } from "@/features/review/components/fields"
 import { LOCAL_DROP_ATTR } from "@/lib/library/drag"
@@ -95,6 +96,7 @@ function draftFrom(p: PromptView | null | undefined): Draft {
 
 export function PromptForm({ prompt, parent, copyFrom, template = false, initialReference, suggestions, projects }: Props) {
   const router = useRouter()
+  const analysis = useOptionalAnalysis()
   const uid = useId()
   const source = prompt ?? parent ?? copyFrom ?? null
   const isVersion = !prompt && Boolean(parent)
@@ -240,6 +242,8 @@ export function PromptForm({ prompt, parent, copyFrom, template = false, initial
         )
         return
       }
+      // Wake the background worker: the new text or result needs analysis and a vector.
+      analysis?.kick()
       toast.success(prompt ? "Prompt salvo." : isVersion ? "Nova versão salva." : "Prompt criado.")
       router.push(`/prompts/${id}`)
       router.refresh()

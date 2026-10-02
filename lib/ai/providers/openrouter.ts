@@ -45,7 +45,7 @@ export const openRouterProvider: AnalysisProvider = {
           response_format: {
             type: "json_schema",
             // Not strict: models differ in which JSON Schema keywords they accept. Zod validates the result.
-            json_schema: { name: "reference_analysis", strict: false, schema: stripGeminiKeywords(jsonSchema) },
+            json_schema: { name: "analysis", strict: false, schema: stripGeminiKeywords(jsonSchema) },
           },
         }),
         signal: AbortSignal.timeout(TIMEOUT_MS),

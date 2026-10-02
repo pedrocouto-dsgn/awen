@@ -2,14 +2,14 @@
   "$comment": "Where the Awen project stands. Updated at the end of every milestone or session. AI agents: read this first, then Awen-Briefing.md (product), awen-DESIGN.md (design) and README.md (setup). Never put keys or passwords here.",
   "project": "Awen",
   "summary": "Banco de referências pessoal para direção criativa: imagens, vídeos e prompts, com análise por IA e aprovação manual.",
-  "updatedAt": "2026-10-01",
+  "updatedAt": "2026-10-02",
   "lastCommit": "44b8094",
 
   "currentPhase": "Fase 2 — Ferramentas de trabalho",
   "nextStep": {
-    "milestone": "M12c",
-    "title": "Análise por IA dos prompts (tags e seções), busca por significado nos prompts, captura pela extensão",
-    "notes": "Precisa de migração nova (colunas de IA/embedding em prompts). Reaproveitar lib/ai (provedor + fallback) e o padrão de search_queries do M11."
+    "milestone": "M13",
+    "title": "Moodboard com exportação (PNG, PDF, imagens separadas)",
+    "notes": "project_references já tem x, y, width, height, z_index e caption desde o M1 (posições no board)."
   },
 
   "phases": {
@@ -61,8 +61,14 @@
           "commit": "8137012"
         },
         { "id": "M12b", "title": "Comparar versões, blocos reutilizáveis, preencher modelos com variáveis", "status": "done", "commit": "44b8094" },
-        { "id": "M12c", "title": "Análise por IA dos prompts (tags e seções), busca por significado nos prompts, captura pela extensão", "status": "next" },
-        { "id": "M13", "title": "Moodboard com exportação (PNG, PDF, imagens separadas)", "status": "todo" },
+        {
+          "id": "M12c",
+          "title": "Análise por IA dos prompts (tags e seções), busca por significado nos prompts, captura pela extensão",
+          "status": "done",
+          "commit": "PENDING",
+          "pending": "Extensão 0.2.0 (nova permissão scripting): o usuário recarrega em chrome://extensions e testa selecionar texto → 'Guardar texto como prompt' → botão direito na imagem → 'Salvar como resultado do prompt'."
+        },
+        { "id": "M13", "title": "Moodboard com exportação (PNG, PDF, imagens separadas)", "status": "next" },
         { "id": "M14", "title": "Anotações sobre a imagem e conclusão do modo aleatório", "status": "todo" }
       ]
     },
@@ -93,7 +99,8 @@
       "20261001000007_fix_reset_embedding.sql",
       "20261001000008_api_tokens.sql",
       "20261001000009_semantic_search.sql",
-      "20261001000010_prompt_library.sql"
+      "20261001000010_prompt_library.sql",
+      "20261002000011_prompt_ai.sql"
     ],
     "pending": []
   },
@@ -109,13 +116,14 @@
       "Há duas contas GitHub no Mac (off-the-grid-pt sem acesso): o remote usa https://pedrocouto-dsgn@github.com/...",
       "Há duas contas Vercel: a CLI precisa estar logada como pedrocouto-dsgn.",
       "Funções plpgsql com search_path='' não enxergam operadores do pgvector: usar cast ::text ou qualificar o schema.",
+      "Next 16 mantém a página anterior escondida (Activity) ao navegar: no DOM aparecem elementos duplicados, um invisível. Em testes, filtrar por visibilidade ou clicar por coordenadas.",
       "Para testar SQL antes do usuário aplicar: conectar pelo pooler aws-1-eu-west-1.pooler.supabase.com:5432 (usuário postgres.<ref>, SUPABASE_DB_PASSWORD) dentro de BEGIN ... ROLLBACK. psql não está instalado; usar o pacote pg num diretório temporário.",
       "Next.js 16 tem mudanças: ler node_modules/next/dist/docs antes de escrever código (AGENTS.md)."
     ]
   },
 
   "openItems": [
-    { "owner": "usuário", "item": "Instalar e testar a extensão de Chrome no navegador." },
+    { "owner": "usuário", "item": "Instalar (ou recarregar, versão 0.2.0) e testar a extensão de Chrome, incluindo a captura de prompt + resultado." },
     { "owner": "usuário", "item": "Criar chave no OpenRouter para ativar o fallback Qwen; depois o Claude envia as variáveis à Vercel e testa." },
     { "owner": "usuário", "item": "Conferir Supabase → Authentication → URL Configuration (Site URL e Redirect URLs com awen-theta.vercel.app)." },
     { "owner": "claude", "item": "Testar upload de vídeo local de ponta a ponta (nunca testado)." },

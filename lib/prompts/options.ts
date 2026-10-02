@@ -1,5 +1,6 @@
 import { z } from "zod"
 
+import { SECTION_KEYS } from "@/lib/ai/prompt-analysis"
 import type { Database } from "@/types/database"
 
 // Labels, default lists and URL filters for the prompt library. Pure and isomorphic.
@@ -69,6 +70,8 @@ export const promptFiltersSchema = z.object({
   origem: enumOf(ORIGIN_LABEL),
   projeto: z.uuid().optional().catch(undefined),
   tag: text(40),
+  /** Look for the words only in this section of the text (camera, lighting…). */
+  secao: z.enum(SECTION_KEYS).optional().catch(undefined),
   /** "modelos": templates (prompts with {variables}); "blocos": reusable blocks. */
   aba: z.enum(["modelos", "blocos"]).optional().catch(undefined),
 })
@@ -97,6 +100,7 @@ export function promptFiltersToParams(f: PromptFilters): URLSearchParams {
   if (f.origem) p.set("origem", f.origem)
   if (f.projeto) p.set("projeto", f.projeto)
   if (f.tag) p.set("tag", f.tag)
+  if (f.secao) p.set("secao", f.secao)
   if (f.aba) p.set("aba", f.aba)
   return p
 }

@@ -1,8 +1,13 @@
 import "server-only"
 
+import { z } from "zod"
+
 import { presignGet } from "@/lib/r2/presign"
 import { VIEW_TTL_SECONDS } from "@/lib/references/view"
 import type { ServerSupabase } from "@/lib/supabase/server"
+import { embeddingModel } from "@/lib/ai/embeddings"
+import { SECTION_KEYS, type SectionKey } from "@/lib/ai/prompt-analysis"
+import { isSemanticQuery, TEXT_SEARCH, textQueryVector } from "@/lib/library/query-vectors"
 import { paletteSchema } from "@/lib/validation/ingest"
 import type { Prompt, PromptAsset } from "@/types/database"
 
@@ -45,8 +50,24 @@ export type PromptAssetView = {
 
 export type PromptVersion = { id: string; number: number; createdAt: string; note: string | null }
 
-export type PromptView = Omit<Prompt, "search_tsv" | "params" | "owner_id"> & {
+type HiddenColumns =
+  | "search_tsv"
+  | "params"
+  | "owner_id"
+  | "ai"
+  | "sections"
+  | "embedding"
+  | "embedding_model"
+  | "embedded_at"
+  | "embedding_attempted_at"
+  | "analysis_attempted_at"
+
+export type PromptView = Omit<Prompt, HiddenColumns> & {
   params: PromptParams
+  /** Sections of the text found by the AI (copied from it). */
+  sections: Partial<Record<SectionKey, string>>
+  /** AI tag suggestions not yet in the prompt's tags. */
+  suggestedTags: string[]
   results: PromptAssetView[]
   inputs: PromptAssetView[]
   references: { id: string; title: string | null; thumbUrl: string | null }[]
@@ -60,7 +81,17 @@ export async function searchPrompts(
   supabase: ServerSupabase,
   filters: PromptFilters,
   offset = 0,
-): Promise<{ cards: PromptCard[]; total: number; nextOffset: number | null }> {
+): Promise<{
+  cards: PromptCard[]
+  total: number
+  nextOffset: number | null
+  /** Text query searched by meaning (true), or only by words because embeddings were unavailable (false). */
+  semantic: boolean | null
+}> {
+  // Inside one section the words must match literally; elsewhere the query is also searched by meaning.
+  const query = filters.q ?? null
+  const wantsMeaning = Boolean(query && !filters.secao && isSemanticQuery(query))
+  const queryVector = wantsMeaning ? await textQueryVector(supabase, query!) : null
   const { data, error, count } = await supabase
     .rpc(
       "search_prompts",
@@ -74,6 +105,11 @@ export async function searchPrompts(
         p_project_id: filters.projeto ?? null,
         p_tag: filters.tag ?? null,
         p_templates: filters.aba === "modelos",
+        p_section: filters.secao ?? null,
+        p_query_vector: queryVector,
+        p_embedding_model: embeddingModel(),
+        p_max_distance: TEXT_SEARCH.maxDistance,
+        p_distance_margin: TEXT_SEARCH.margin,
       },
       { count: "exact" },
     )
@@ -84,7 +120,7 @@ export async function searchPrompts(
   const cards = await toCards(supabase, (data ?? []) as CardRow[])
   const total = count ?? cards.length
   const next = offset + cards.length
-  return { cards, total, nextOffset: next < total ? next : null }
+  return { cards, total, nextOffset: next < total ? next : null, semantic: wantsMeaning ? queryVector !== null : null }
 }
 
 /** First result of each prompt, as a card preview. */
@@ -203,12 +239,26 @@ export async function loadPrompt(supabase: ServerSupabase, id: string): Promise<
       .map(async (r) => ({ id: r.id, title: r.title, thumbUrl: await sign(r.thumbnail_key) })),
   )
 
-  const { search_tsv: _t, params, owner_id: _o, ...rest } = prompt
-  void _t
-  void _o
+  const {
+    search_tsv: _t,
+    params,
+    owner_id: _o,
+    ai,
+    sections,
+    embedding: _e,
+    embedding_model: _em,
+    embedded_at: _ea,
+    embedding_attempted_at: _eat,
+    analysis_attempted_at: _aat,
+    ...rest
+  } = prompt
+  void [_t, _o, _e, _em, _ea, _eat, _aat]
+  const suggested = aiTagsSchema.safeParse(ai).data?.suggested_tags ?? []
   return {
     ...rest,
     params: readParams(params),
+    sections: readSections(sections),
+    suggestedTags: suggested.filter((t) => !prompt.tags.includes(t)),
     results: assetViews.filter((a) => a.role === "result"),
     inputs: assetViews.filter((a) => a.role === "input"),
     references,
@@ -327,4 +377,16 @@ export async function toolSuggestions(
     })
   }
   return { tools: merge(used("tool"), DEFAULT_TOOLS), models: merge(used("model"), DEFAULT_MODELS) }
+}
+
+const aiTagsSchema = z.object({ suggested_tags: z.array(z.string()).catch([]) }).partial()
+
+function readSections(value: unknown): Partial<Record<SectionKey, string>> {
+  if (!value || typeof value !== "object") return {}
+  const out: Partial<Record<SectionKey, string>> = {}
+  for (const k of SECTION_KEYS) {
+    const v = (value as Record<string, unknown>)[k]
+    if (typeof v === "string" && v.trim()) out[k] = v
+  }
+  return out
 }

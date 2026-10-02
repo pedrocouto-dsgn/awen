@@ -1,4 +1,4 @@
-import { getMe, getSettings } from "./api.js"
+import { getMe, getPendingPrompt, getSettings } from "./api.js"
 
 const account = document.getElementById("account")
 const savePage = document.getElementById("save-page")
@@ -29,6 +29,22 @@ async function save(toProject) {
   if (result?.ok) showStatus(result.project ? `Salvo no projeto ${result.project.name}.` : "Salvo no Awen.", "ok")
   else showStatus(result?.error ?? "Não foi possível salvar.", "error")
 }
+
+const pending = document.getElementById("pending")
+
+/** The prompt text kept for the next "Salvar como resultado do prompt". */
+async function showPending() {
+  const prompt = await getPendingPrompt()
+  pending.hidden = !prompt
+  if (!prompt) return
+  const text = prompt.text.replace(/\s+/g, " ").trim()
+  document.getElementById("pending-text").textContent = text.length > 140 ? `${text.slice(0, 139)}…` : text
+}
+
+document.getElementById("discard-prompt").addEventListener("click", async () => {
+  await chrome.runtime.sendMessage({ type: "discard-prompt" })
+  await showPending()
+})
 
 savePage.addEventListener("click", () => void save(false))
 saveProject.addEventListener("click", () => void save(true))
@@ -75,3 +91,4 @@ function line(label, value) {
 }
 
 void init()
+void showPending()

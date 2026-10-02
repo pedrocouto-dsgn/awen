@@ -1,6 +1,3 @@
-import type { AnalysisContext } from "./prompt"
-import type { Vocabularies } from "./schema"
-
 export type AnalysisInput =
   | { kind: "images"; images: { data: Uint8Array; mimeType: string }[] }
   | { kind: "youtube"; url: string }
@@ -8,8 +5,6 @@ export type AnalysisInput =
 /** What every provider receives: media, the prompt text and the JSON Schema to answer with. */
 export type AnalysisRequest = {
   input: AnalysisInput
-  ctx: AnalysisContext
-  vocab: Vocabularies
   prompt: string
   jsonSchema: Record<string, unknown>
 }

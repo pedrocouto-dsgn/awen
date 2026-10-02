@@ -25,17 +25,23 @@ export async function getQueueStats(supabase: ServerSupabase): Promise<QueueStat
   }
 }
 
-/** Analyses done by this user in the last 24h, and when the oldest one expires. */
+/** Analyses (references and prompts) done by this user in the last 24h, and when the oldest one expires. */
 export async function dailyUsage(supabase: ServerSupabase, userId: string) {
   const since = new Date(Date.now() - 24 * 3600_000).toISOString()
-  const { data, count } = await supabase
-    .from("references")
-    .select("analyzed_at", { count: "exact" })
-    .eq("owner_id", userId)
-    .gte("analyzed_at", since)
-    .order("analyzed_at", { ascending: true })
-    .limit(1)
-  const oldest = data?.[0]?.analyzed_at
+  const [refs, prompts] = await Promise.all(
+    (["references", "prompts"] as const).map((table) =>
+      supabase
+        .from(table)
+        .select("analyzed_at", { count: "exact" })
+        .eq("owner_id", userId)
+        .gte("analyzed_at", since)
+        .order("analyzed_at", { ascending: true })
+        .limit(1),
+    ),
+  )
+  const oldest = [refs?.data?.[0]?.analyzed_at, prompts?.data?.[0]?.analyzed_at]
+    .filter((d): d is string => Boolean(d))
+    .sort()[0]
   const resetInMs = oldest ? new Date(oldest).getTime() + 24 * 3600_000 - Date.now() : 0
-  return { used: count ?? 0, resetInMs: Math.max(60_000, resetInMs) }
+  return { used: (refs?.count ?? 0) + (prompts?.count ?? 0), resetInMs: Math.max(60_000, resetInMs) }
 }

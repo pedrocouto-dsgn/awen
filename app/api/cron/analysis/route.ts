@@ -4,6 +4,7 @@ import { NextResponse } from "next/server"
 
 import { embedNext } from "@/lib/analysis/embed"
 import { processNext, type RunResult } from "@/lib/analysis/process"
+import { analyzeNextPrompt, embedNextPrompts } from "@/lib/analysis/prompts"
 import { jsonError, serverError } from "@/lib/api/responses"
 import { serverEnv } from "@/lib/env/server"
 import { createAdminClient } from "@/lib/supabase/admin"
@@ -24,7 +25,7 @@ function authorized(request: Request): boolean {
 
 /**
  * Daily safety net (Vercel Cron): drains part of the queue for all users even
- * when nobody has the app open, then embeds approved references. The browser
+ * when nobody has the app open, then prompts, then embeds references and prompts. The browser
  * worker does the real-time work.
  */
 export async function GET(request: Request) {
@@ -40,9 +41,16 @@ export async function GET(request: Request) {
       if (result.state === "idle" || result.state === "paused") break
     }
     while (Date.now() - started < BUDGET_MS && results.length < MAX_ITEMS) {
-      const result = await embedNext(db)
+      const result = await analyzeNextPrompt(db)
       results.push(result.state)
-      if (result.state !== "embedded" || result.count === 0) break
+      if (result.state === "idle" || result.state === "paused") break
+    }
+    for (const embed of [embedNext, embedNextPrompts]) {
+      while (Date.now() - started < BUDGET_MS && results.length < MAX_ITEMS) {
+        const result = await embed(db)
+        results.push(result.state)
+        if (result.state !== "embedded" || result.count === 0) break
+      }
     }
     return NextResponse.json({ processed: results.length, results })
   } catch (error) {

@@ -26,6 +26,7 @@ import { ORIGIN_LABEL, PARAM_FIELDS, STATUS_LABEL, TYPE_LABEL } from "@/lib/prom
 import { cn } from "@/lib/utils"
 
 import { TemplateText } from "./prompt-grid"
+import { PromptSections, SuggestedTags } from "./prompt-ai"
 import { TemplateFiller } from "./template-filler"
 
 export function PromptDetail({ prompt }: { prompt: PromptView }) {
@@ -156,13 +157,15 @@ export function PromptDetail({ prompt }: { prompt: PromptView }) {
             ) : null}
           </dl>
 
+          <PromptSections prompt={prompt} />
+
           {prompt.notes ? (
             <Block label="Notas">
               <p className="text-sm whitespace-pre-wrap">{prompt.notes}</p>
             </Block>
           ) : null}
 
-          {prompt.tags.length > 0 ? (
+          {prompt.tags.length > 0 || prompt.suggestedTags.length > 0 ? (
             <Block label="Tags">
               <div className="flex flex-wrap gap-1.5">
                 {prompt.tags.map((t) => (
@@ -171,6 +174,7 @@ export function PromptDetail({ prompt }: { prompt: PromptView }) {
                   </Badge>
                 ))}
               </div>
+              <SuggestedTags promptId={prompt.id} tags={prompt.suggestedTags} />
             </Block>
           ) : null}
 

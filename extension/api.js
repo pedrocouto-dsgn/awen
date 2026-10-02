@@ -59,18 +59,7 @@ export function saveLink(url, toProject) {
  * server derives thumbnail and palette.
  */
 export async function saveImage({ srcUrl, pageUrl, pageTitle, toProject }) {
-  let blob
-  try {
-    const res = await fetch(srcUrl, { credentials: "include" })
-    if (!res.ok) throw new Error(String(res.status))
-    blob = await res.blob()
-  } catch {
-    throw new ApiError("Não foi possível baixar esta imagem.", 0)
-  }
-  if (blob.size > MAX_IMAGE_BYTES) throw new ApiError("A imagem passa de 50 MB.", 413)
-
-  const mimeType = await sniffImageType(blob)
-  if (!mimeType) throw new ApiError("Formato de imagem não suportado.", 415)
+  const { blob, mimeType } = await downloadImage(srcUrl)
 
   const created = await api("/api/ext/references", {
     method: "POST",
@@ -85,15 +74,65 @@ export async function saveImage({ srcUrl, pageUrl, pageTitle, toProject }) {
     },
   })
 
-  const put = await fetch(created.upload.url, {
+  await upload(created.upload, blob)
+  await api(`/api/ext/references/${created.referenceId}/finalize`, { method: "POST" })
+  return created
+}
+
+/**
+ * Saves someone else's prompt (text selected on a page) with the image it generated,
+ * in one entry of the prompt library. Returns { promptId }.
+ */
+export async function savePromptWithImage({ promptText, srcUrl, pageUrl, pageTitle }) {
+  const { blob, mimeType } = await downloadImage(srcUrl)
+  const created = await api("/api/ext/prompts", {
+    method: "POST",
+    body: {
+      promptText,
+      pageUrl: /^https?:/i.test(pageUrl || "") ? pageUrl : undefined,
+      pageTitle: pageTitle || undefined,
+      image: { mimeType, size: blob.size },
+    },
+  })
+  await upload(created.upload, blob)
+  await api(`/api/ext/prompts/${created.promptId}/assets/${created.assetId}/finalize`, { method: "POST" })
+  return created
+}
+
+/** Downloads with the user's cookies (works on sites that block server downloads). */
+async function downloadImage(srcUrl) {
+  let blob
+  try {
+    const res = await fetch(srcUrl, { credentials: "include" })
+    if (!res.ok) throw new Error(String(res.status))
+    blob = await res.blob()
+  } catch {
+    throw new ApiError("Não foi possível baixar esta imagem.", 0)
+  }
+  if (blob.size > MAX_IMAGE_BYTES) throw new ApiError("A imagem passa de 50 MB.", 413)
+  const mimeType = await sniffImageType(blob)
+  if (!mimeType) throw new ApiError("Formato de imagem não suportado.", 415)
+  return { blob, mimeType }
+}
+
+async function upload(target, blob) {
+  const put = await fetch(target.url, {
     method: "PUT",
-    headers: { "Content-Type": created.upload.contentType },
+    headers: { "Content-Type": target.contentType },
     body: blob,
   }).catch(() => null)
   if (!put || !put.ok) throw new ApiError("O envio da imagem falhou.", put?.status ?? 0)
+}
 
-  await api(`/api/ext/references/${created.referenceId}/finalize`, { method: "POST" })
-  return created
+/** Prompt text kept between the two right-clicks (cleared when the browser closes). */
+export async function getPendingPrompt() {
+  const { pendingPrompt } = await chrome.storage.session.get("pendingPrompt")
+  return pendingPrompt || null
+}
+
+export async function setPendingPrompt(pending) {
+  if (pending) await chrome.storage.session.set({ pendingPrompt: pending })
+  else await chrome.storage.session.remove("pendingPrompt")
 }
 
 /** Detects the real image format from its first bytes (CDNs often send a generic type). */

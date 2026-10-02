@@ -19,7 +19,12 @@
     <button id="save-page" disabled>Salvar esta página</button>
     <button id="save-page-project" class="ghost" hidden>Salvar no projeto</button>
     <p id="status" class="status"></p>
-    <p class="muted">Clique com o botão direito numa imagem ou vídeo para salvar só a mídia.</p>
+    <div id="pending" class="card stack" hidden>
+      <p><span class="muted">Prompt guardado:</span> <span id="pending-text"></span></p>
+      <p class="muted">Clique com o botão direito na imagem que ele gerou e escolha “Salvar como resultado do prompt”.</p>
+      <button id="discard-prompt" class="ghost">Descartar</button>
+    </div>
+    <p class="muted">Clique com o botão direito numa imagem ou vídeo para salvar só a mídia. Para um prompt de outra pessoa: selecione o texto e use “Guardar texto como prompt”.</p>
     <a id="options" href="#" class="muted">Opções</a>
     <script type="module" src="popup.js"></script>
   </body>

@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
+import { SECTION_KEYS, SECTION_LABEL, type SectionKey } from "@/lib/ai/prompt-analysis"
 import {
   countPromptFilters,
   ORIGIN_LABEL,
@@ -32,10 +33,13 @@ export function PromptToolbar({
   filters,
   options,
   total,
+  semantic,
 }: {
   filters: PromptFilters
   options: PromptFilterOptions
   total: number
+  /** False when a text query could only be matched word for word (AI unavailable). */
+  semantic: boolean | null
 }) {
   const router = useRouter()
   const pathname = usePathname()
@@ -85,11 +89,25 @@ export function PromptToolbar({
             type="search"
             value={q}
             onChange={(e) => onSearch(e.target.value)}
-            placeholder="Buscar no texto, título, notas e tags"
+            placeholder={filters.secao ? `Palavras em ${SECTION_LABEL[filters.secao]}` : "Descreva o que procura"}
             aria-label="Buscar prompts"
             className="h-11 bg-card pl-10"
           />
         </div>
+
+        <Select value={filters.secao ?? ANY} onValueChange={(v) => apply({ secao: v === ANY ? undefined : (v as SectionKey) })}>
+          <SelectTrigger className="h-11 w-40" aria-label="Onde buscar">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value={ANY}>Todo o prompt</SelectItem>
+            {SECTION_KEYS.map((k) => (
+              <SelectItem key={k} value={k}>
+                Só em {SECTION_LABEL[k]}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
 
         <Sheet>
           <SheetTrigger asChild>
@@ -153,6 +171,12 @@ export function PromptToolbar({
           </Link>
         </Button>
       </div>
+
+      {semantic === false ? (
+        <p className="text-xs text-muted-foreground">
+          A busca por significado está indisponível agora (limite da IA). Mostrando só o que tem estas palavras.
+        </p>
+      ) : null}
 
       {chips.length > 0 ? (
         <div className="flex flex-wrap items-center gap-1.5">

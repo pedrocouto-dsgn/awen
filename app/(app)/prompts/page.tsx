@@ -44,6 +44,7 @@ export default async function PromptsPage({ searchParams }: PageProps<"/prompts"
         filters={filters}
         options={{ tools: names.tools, models: names.models, projects: projects.data ?? [] }}
         total={result.total}
+        semantic={result.semantic}
       />
       {result.cards.length > 0 ? (
         <PromptGrid

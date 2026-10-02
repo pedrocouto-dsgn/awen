@@ -1,9 +1,9 @@
 {
   "manifest_version": 3,
   "name": "Awen",
-  "version": "0.1.0",
-  "description": "Salve imagens, vídeos e páginas no seu banco de referências Awen.",
-  "permissions": ["contextMenus", "storage", "notifications", "alarms"],
+  "version": "0.2.0",
+  "description": "Salve imagens, vídeos, páginas e prompts com o resultado no seu Awen.",
+  "permissions": ["contextMenus", "storage", "notifications", "alarms", "scripting"],
   "host_permissions": ["<all_urls>"],
   "background": { "service_worker": "background.js", "type": "module" },
   "action": {

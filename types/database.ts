@@ -108,6 +108,15 @@ type PromptRow = Owned & {
   version_note: string | null
   is_template: boolean
   search_tsv: unknown
+  ai: Json | null
+  sections: Json | null
+  analyzed_at: string | null
+  analysis_attempted_at: string | null
+  analysis_error: string | null
+  embedding: string | null
+  embedding_model: string | null
+  embedded_at: string | null
+  embedding_attempted_at: string | null
 }
 type PromptAssetRow = Owned & {
   prompt_id: string
@@ -295,9 +304,16 @@ export type Database = {
           p_tag?: string | null
           p_templates?: boolean
           p_latest_only?: boolean
+          p_section?: string | null
+          p_query_vector?: string | null
+          p_embedding_model?: string | null
+          p_max_distance?: number | null
+          p_distance_margin?: number | null
         }
         Returns: PromptRow[]
       }
+      next_prompt_analysis: { Args: { p_limit?: number }; Returns: PromptRow[] }
+      next_prompt_embedding: { Args: { p_model: string; p_limit?: number }; Returns: PromptRow[] }
       prompt_tool_names: {
         Args: Record<PropertyKey, never>
         Returns: { field: "tool" | "model"; name: string; uses: number }[]

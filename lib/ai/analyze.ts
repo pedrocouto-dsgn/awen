@@ -1,5 +1,7 @@
 import "server-only"
 
+import type { z } from "zod"
+
 import { aiConfig, aiFallbackConfig, type AiConfig } from "@/lib/env/server"
 
 import { RetryableAnalysisError } from "./errors"
@@ -7,7 +9,7 @@ import { analysisPrompt, type AnalysisContext } from "./prompt"
 import { geminiProvider } from "./providers/gemini"
 import { openRouterProvider } from "./providers/openrouter"
 import { analysisJsonSchema, analysisOutputSchema, type AnalysisOutput, type Vocabularies } from "./schema"
-import type { AnalysisInput, AnalysisProvider } from "./types"
+import type { AnalysisInput, AnalysisProvider, AnalysisRequest } from "./types"
 
 export { FatalAnalysisError, RetryableAnalysisError } from "./errors"
 export type { AnalysisInput } from "./types"
@@ -27,6 +29,19 @@ export async function analyzeMedia(
   ctx: AnalysisContext,
   vocab: Vocabularies,
 ): Promise<{ output: AnalysisOutput; model: string }> {
+  return generateJson(input, analysisPrompt(ctx), analysisJsonSchema(vocab, ctx.isVideo), analysisOutputSchema)
+}
+
+/**
+ * Structured output from the configured provider (with the same daily-quota fallback),
+ * validated with `schema`. Shared by reference and prompt analysis.
+ */
+export async function generateJson<T>(
+  input: AnalysisInput,
+  prompt: string,
+  jsonSchema: Record<string, unknown>,
+  schema: z.ZodType<T>,
+): Promise<{ output: T; model: string }> {
   let config: AiConfig
   try {
     config = aiConfig()
@@ -35,26 +50,23 @@ export async function analyzeMedia(
     throw new RetryableAnalysisError(error instanceof Error ? error.message : "AI is not configured.", 30 * 60_000, "auth")
   }
 
+  const request: AnalysisRequest = { input, prompt, jsonSchema }
   try {
-    return await analyzeWith(config, input, ctx, vocab)
+    return await generateWith(config, request, schema)
   } catch (error) {
     const fallback = aiFallbackConfig()
     if (!(error instanceof RetryableAnalysisError && error.dailyQuota) || !fallback) throw error
     // The main provider is checked again on every item, so it takes back over once its quota resets.
-    return analyzeWith(fallback, input, ctx, vocab)
+    return generateWith(fallback, request, schema)
   }
 }
 
-async function analyzeWith(
+async function generateWith<T>(
   config: AiConfig,
-  input: AnalysisInput,
-  ctx: AnalysisContext,
-  vocab: Vocabularies,
-): Promise<{ output: AnalysisOutput; model: string }> {
-  const text = await PROVIDERS[config.provider].generate(
-    { input, ctx, vocab, prompt: analysisPrompt(ctx), jsonSchema: analysisJsonSchema(vocab, ctx.isVideo) },
-    config,
-  )
+  request: AnalysisRequest,
+  schema: z.ZodType<T>,
+): Promise<{ output: T; model: string }> {
+  const text = await PROVIDERS[config.provider].generate(request, config)
 
   if (!text) throw new RetryableAnalysisError("Empty response from the model.")
   let json: unknown
@@ -63,7 +75,7 @@ async function analyzeWith(
   } catch {
     throw new RetryableAnalysisError("The model returned invalid JSON.")
   }
-  const parsed = analysisOutputSchema.safeParse(json)
+  const parsed = schema.safeParse(json)
   if (!parsed.success) throw new RetryableAnalysisError("The model returned an unexpected structure.")
   return { output: parsed.data, model: config.model }
 }
