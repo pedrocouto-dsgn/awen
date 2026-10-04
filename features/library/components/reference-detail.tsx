@@ -185,7 +185,7 @@ export function ReferenceDetail({
           <ArrowLeftIcon /> Voltar
         </Button>
         <SourceLink reference={reference} className="absolute top-4 right-4 z-10" />
-        <MediaViewer media={reference.media} aspectRatio={reference.aspect_ratio} title={reference.title} />
+        <MediaViewer media={reference.media} aspectRatio={reference.aspect_ratio} title={reference.title} href={reference.source_url} />
       </section>
 
       <aside

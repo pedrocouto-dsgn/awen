@@ -12,12 +12,12 @@ import {
   UploadIcon,
   XIcon,
 } from "lucide-react"
-import { useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 
-import { useIngest, type IngestItem } from "../ingest-provider"
+import { FINISHED, useIngest, type IngestItem } from "../ingest-provider"
 import { ACCEPT } from "./add-reference-dialog"
 
 const STATUS_LABEL: Record<IngestItem["status"], string> = {
@@ -31,28 +31,38 @@ const STATUS_LABEL: Record<IngestItem["status"], string> = {
   error: "Erro",
 }
 
+/** Once everything has finished, the tray closes by itself after this long (paused on hover). */
+const AUTO_CLOSE_MS = 7000
+
 export function IngestTray() {
   const { items, clearFinished } = useIngest()
   const [collapsed, setCollapsed] = useState(false)
-  if (items.length === 0) return null
+  const [hovering, setHovering] = useState(false)
 
-  const active = items.filter((i) => !["done", "error", "link-only"].includes(i.status)).length
-  const finished = items.filter((i) => i.status === "done").length
+  const active = items.filter((i) => !FINISHED.has(i.status)).length
+  // Errors stay until closed by hand, so a failed upload is not lost unnoticed.
+  const hasError = items.some((i) => i.status === "error")
+  const autoClose = items.length > 0 && active === 0 && !hasError && !hovering
+
+  useEffect(() => {
+    if (!autoClose) return
+    const timer = setTimeout(clearFinished, AUTO_CLOSE_MS)
+    return () => clearTimeout(timer)
+  }, [autoClose, clearFinished])
+
+  if (items.length === 0) return null
 
   return (
     <section
       aria-label="Envios"
+      onMouseEnter={() => setHovering(true)}
+      onMouseLeave={() => setHovering(false)}
       className="fixed right-4 bottom-4 z-40 w-[min(22rem,calc(100vw-2rem))] overflow-hidden rounded-2xl glass-strong text-popover-foreground shadow-overlay"
     >
       <header className="flex items-center gap-2 border-b border-glass-border px-3 py-2">
         <p className="flex-1 text-sm font-medium" aria-live="polite">
           {active > 0 ? `Enviando ${active} de ${items.length}` : `${items.length} ${items.length === 1 ? "item" : "itens"}`}
         </p>
-        {finished > 0 ? (
-          <Button variant="ghost" size="sm" onClick={clearFinished}>
-            Limpar
-          </Button>
-        ) : null}
         <Button
           variant="ghost"
           size="icon-sm"
@@ -60,6 +70,15 @@ export function IngestTray() {
           onClick={() => setCollapsed((c) => !c)}
         >
           {collapsed ? <ChevronUpIcon /> : <ChevronDownIcon />}
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          aria-label="Fechar"
+          title={active > 0 ? "Fechar (os envios em andamento continuam na lista)" : "Fechar"}
+          onClick={clearFinished}
+        >
+          <XIcon />
         </Button>
       </header>
       {collapsed ? null : (
@@ -76,7 +95,7 @@ export function IngestTray() {
 function TrayRow({ item }: { item: IngestItem }) {
   const { retry, remove, addFiles } = useIngest()
   const fileRef = useRef<HTMLInputElement>(null)
-  const busy = !["done", "error", "link-only"].includes(item.status)
+  const busy = !FINISHED.has(item.status)
 
   return (
     <li className="flex gap-3 px-3 py-2.5">

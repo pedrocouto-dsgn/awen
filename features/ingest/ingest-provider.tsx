@@ -30,6 +30,8 @@ export type IngestItem = {
   attachTo?: string
 }
 
+export const FINISHED = new Set<IngestStatus>(["done", "error", "link-only"])
+
 type Action =
   | { type: "add"; item: IngestItem }
   | { type: "update"; id: string; patch: Partial<IngestItem> }
@@ -45,7 +47,7 @@ function reducer(state: IngestItem[], action: Action): IngestItem[] {
     case "remove":
       return state.filter((i) => i.id !== action.id)
     case "clearFinished":
-      return state.filter((i) => i.status !== "done")
+      return state.filter((i) => !FINISHED.has(i.status))
   }
 }
 
@@ -243,7 +245,7 @@ export function IngestProvider({ children }: { children: React.ReactNode }) {
   )
 
   const clearFinished = useCallback(() => {
-    for (const i of items) if (i.status === "done" && i.previewUrl) URL.revokeObjectURL(i.previewUrl)
+    for (const i of items) if (FINISHED.has(i.status) && i.previewUrl) URL.revokeObjectURL(i.previewUrl)
     dispatch({ type: "clearFinished" })
   }, [items])
 

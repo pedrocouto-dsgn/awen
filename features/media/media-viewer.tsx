@@ -10,14 +10,33 @@ type Props = {
   aspectRatio?: number | null
   title?: string | null
   className?: string
+  /** Images open this page (the reference's source) in a new tab when clicked. */
+  href?: string | null
   children?: React.ReactNode
 }
 
 /** Large media stage: image, HTML5 video, or YouTube/Vimeo embed. The media is the hero. */
-export function MediaViewer({ media, aspectRatio, title, className, children }: Props) {
+export function MediaViewer({ media, aspectRatio, title, className, href, children }: Props) {
   return (
     <div className={cn("relative flex size-full min-h-0 items-center justify-center bg-media", className)}>
-      {media.kind === "image" ? (
+      {media.kind === "image" && href ? (
+        <a
+          href={href}
+          target="_blank"
+          rel="noopener noreferrer"
+          title="Abrir na origem"
+          className="flex size-full min-h-0 cursor-pointer items-center justify-center"
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element -- presigned private URL */}
+          <img
+            src={media.src}
+            alt={title ?? ""}
+            className="max-h-full max-w-full object-contain"
+            decoding="async"
+            draggable={false}
+          />
+        </a>
+      ) : media.kind === "image" ? (
         // eslint-disable-next-line @next/next/no-img-element -- presigned private URL
         <img
           src={media.src}

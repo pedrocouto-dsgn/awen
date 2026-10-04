@@ -302,7 +302,7 @@ export function ReviewScreen({ items, vocab: initialVocab, queued, activeProject
         className="relative h-[55svh] shrink-0 overflow-hidden rounded-2xl bg-media lg:h-auto lg:min-h-0 lg:min-w-0 lg:flex-1"
       >
         <SourceLink reference={current} className="absolute top-4 right-4 z-10" />
-        <MediaViewer media={current.media} aspectRatio={current.aspect_ratio} title={current.title}>
+        <MediaViewer media={current.media} aspectRatio={current.aspect_ratio} title={current.title} href={current.source_url}>
           {current.media.kind === "none" ? (
             <>
               <Button variant="secondary" size="sm" onClick={() => fileRef.current?.click()}>

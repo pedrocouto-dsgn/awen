@@ -139,6 +139,64 @@ async function resolvePinterest(rawUrl: string, knownPinId: string | null): Prom
   }
 }
 
+const instagramMedia = z.object({
+  is_video: z.boolean().nullish(),
+  display_url: z.string(),
+  owner: z.object({ username: z.string().nullish(), full_name: z.string().nullish() }).nullish(),
+  edge_media_to_caption: z
+    .object({ edges: z.array(z.object({ node: z.object({ text: z.string() }) })) })
+    .nullish(),
+})
+
+/**
+ * Instagram posts via the public embed page, which carries the post data as JSON:
+ * the clean full-size cover (Open Graph's og:image for videos is 360px with a play
+ * icon burned in), author and caption. Null falls back to Open Graph.
+ */
+async function resolveInstagram(shortcode: string): Promise<ResolvedLink | null> {
+  try {
+    const res = await safeFetch(`https://www.instagram.com/p/${shortcode}/embed/captioned/`, {
+      accept: "text/html",
+      maxBytes: 4 * 1024 * 1024,
+    })
+    if (res.status !== 200) return null
+    const html = new TextDecoder().decode(res.body)
+    const raw = /"contextJSON":("(?:[^"\\]|\\.)*")/.exec(html)?.[1]
+    if (!raw) return null
+    const context = JSON.parse(JSON.parse(raw) as string) as { gql_data?: { shortcode_media?: unknown } }
+    const parsed = instagramMedia.safeParse(context.gql_data?.shortcode_media)
+    if (!parsed.success) return null
+    const media = parsed.data
+
+    const username = media.owner?.username ?? null
+    const caption = media.edge_media_to_caption?.edges[0]?.node.text.trim() ?? ""
+    const firstLine = caption.split("\n").find((l) => l.trim())?.trim() ?? ""
+    return {
+      provider: "instagram",
+      sourceKind: "link",
+      type: "image",
+      url: `https://www.instagram.com/p/${shortcode}/`,
+      title: firstLine || (username ? `@${username}` : null),
+      imageUrl: media.display_url,
+      imageIsMedia: true,
+      width: null,
+      height: null,
+      duration: null,
+      meta: {
+        provider: "instagram",
+        siteName: "Instagram",
+        host: "www.instagram.com",
+        shortcode,
+        isVideo: media.is_video ?? false,
+        author: username ? `@${username}` : null,
+        authorUrl: username ? `https://www.instagram.com/${username}/` : null,
+      },
+    }
+  } catch {
+    return null
+  }
+}
+
 export async function resolveLink(rawUrl: string): Promise<ResolvedLink> {
   const kind = classifyUrl(rawUrl)
 
@@ -206,6 +264,11 @@ export async function resolveLink(rawUrl: string): Promise<ResolvedLink> {
   if (kind.provider === "pinterest") {
     const pin = await resolvePinterest(rawUrl, kind.pinId)
     if (pin) return pin
+  }
+
+  if (kind.provider === "instagram" && kind.shortcode) {
+    const post = await resolveInstagram(kind.shortcode)
+    if (post) return post
   }
 
   // Instagram, generic pages and Pinterest fallback: Open Graph.

@@ -4,7 +4,7 @@ export type LinkKind =
   | { provider: "youtube"; videoId: string; isShort: boolean }
   | { provider: "vimeo"; videoId: string }
   | { provider: "pinterest"; pinId: string | null }
-  | { provider: "instagram" }
+  | { provider: "instagram"; shortcode: string | null }
   | { provider: "generic" }
 
 export function classifyUrl(raw: string): LinkKind {
@@ -33,7 +33,9 @@ export function classifyUrl(raw: string): LinkKind {
   if (host === "pin.it" || /(^|\.)pinterest\.[a-z.]+$/.test(host)) {
     return { provider: "pinterest", pinId: pinterestPinId(url) }
   }
-  if (host === "instagram.com" || host === "instagr.am") return { provider: "instagram" }
+  if (host === "instagram.com" || host === "instagr.am") {
+    return { provider: "instagram", shortcode: /\/(?:p|reels?|tv)\/([\w-]{5,40})/.exec(url.pathname)?.[1] ?? null }
+  }
   return { provider: "generic" }
 }
 
