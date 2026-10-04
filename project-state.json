@@ -2,8 +2,8 @@
   "$comment": "Where the Awen project stands. Updated at the end of every milestone or session. AI agents: read this first, then Awen-Briefing.md (product), awen-DESIGN.md (design) and README.md (setup). Never put keys or passwords here.",
   "project": "Awen",
   "summary": "Banco de referências pessoal para direção criativa: imagens, vídeos e prompts, com análise por IA e aprovação manual.",
-  "updatedAt": "2026-10-02",
-  "lastCommit": "403c049",
+  "updatedAt": "2026-10-04",
+  "lastCommit": "24ac57f",
 
   "currentPhase": "Fase 2 — Ferramentas de trabalho",
   "nextStep": {
@@ -126,11 +126,13 @@
     { "owner": "usuário", "item": "Instalar (ou recarregar, versão 0.2.0) e testar a extensão de Chrome, incluindo a captura de prompt + resultado." },
     { "owner": "usuário", "item": "Criar chave no OpenRouter para ativar o fallback Qwen; depois o Claude envia as variáveis à Vercel e testa." },
     { "owner": "usuário", "item": "Conferir Supabase → Authentication → URL Configuration (Site URL e Redirect URLs com awen-theta.vercel.app)." },
+    { "owner": "usuário", "item": "Testar de novo links do Pinterest em produção (correção 24ac57f: API de widgets + imagem original). As 3 referências de pin salvas sem mídia em 04/10 precisam ser apagadas e coladas de novo." },
     { "owner": "claude", "item": "Testar upload de vídeo local de ponta a ponta (nunca testado)." },
     { "owner": "claude", "item": "Testar o e-mail de 'esqueci a senha' em produção." }
   ],
 
   "decisions": [
+    "Pinterest: resolver pins pela API pública widgets.pinterest.com/v3/pidgets/pins/info (não pela página, cujo og:image fica depois de ~1,3 MB de JSON) e trocar o tamanho da imagem por /originals/.",
     "Prompts (M12): resultado e entradas ficam em R2 sob {owner}/prompts/{promptId}/, fora da biblioteca e da fila de revisão. Uma entrada pode apontar para uma referência existente."
   ],
 
