@@ -126,7 +126,6 @@
     { "owner": "usuário", "item": "Instalar (ou recarregar, versão 0.2.0) e testar a extensão de Chrome, incluindo a captura de prompt + resultado." },
     { "owner": "usuário", "item": "Criar chave no OpenRouter para ativar o fallback Qwen; depois o Claude envia as variáveis à Vercel e testa." },
     { "owner": "usuário", "item": "Conferir Supabase → Authentication → URL Configuration (Site URL e Redirect URLs com awen-theta.vercel.app)." },
-    { "owner": "usuário", "item": "Testar de novo links do Pinterest em produção (correção 24ac57f: API de widgets + imagem original). As 3 referências de pin salvas sem mídia em 04/10 precisam ser apagadas e coladas de novo." },
     { "owner": "claude", "item": "Testar upload de vídeo local de ponta a ponta (nunca testado)." },
     { "owner": "claude", "item": "Testar o e-mail de 'esqueci a senha' em produção." }
   ],
