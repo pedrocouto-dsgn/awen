@@ -3,7 +3,7 @@
 export type LinkKind =
   | { provider: "youtube"; videoId: string; isShort: boolean }
   | { provider: "vimeo"; videoId: string }
-  | { provider: "pinterest" }
+  | { provider: "pinterest"; pinId: string | null }
   | { provider: "instagram" }
   | { provider: "generic" }
 
@@ -30,9 +30,15 @@ export function classifyUrl(raw: string): LinkKind {
     const m = /\/(?:video\/)?(\d{6,12})(?:\/|$)/.exec(url.pathname)
     if (m?.[1]) return { provider: "vimeo", videoId: m[1] }
   }
-  if (host === "pin.it" || /(^|\.)pinterest\.[a-z.]+$/.test(host)) return { provider: "pinterest" }
+  if (host === "pin.it" || /(^|\.)pinterest\.[a-z.]+$/.test(host)) {
+    return { provider: "pinterest", pinId: pinterestPinId(url) }
+  }
   if (host === "instagram.com" || host === "instagr.am") return { provider: "instagram" }
   return { provider: "generic" }
+}
+
+export function pinterestPinId(url: URL): string | null {
+  return /\/pin\/(\d{6,25})(?:\/|$)/.exec(url.pathname)?.[1] ?? null
 }
 
 export function youtubeEmbedUrl(videoId: string): string {

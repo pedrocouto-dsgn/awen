@@ -33,14 +33,14 @@ function attrs(tag: string): Record<string, string> {
 }
 
 export function parseOg(html: string, baseUrl: URL): OgData {
-  const head = html.slice(0, 500_000)
+  // Scan the whole document, not just the start: some sites emit their meta tags after megabytes of inline JSON.
   const meta = new Map<string, string>()
-  for (const m of head.matchAll(/<meta\b[^>]*>/gi)) {
+  for (const m of html.matchAll(/<meta\b[^>]*>/gi)) {
     const a = attrs(m[0])
     const key = (a.property ?? a.name ?? a.itemprop ?? "").toLowerCase()
     if (key && a.content && !meta.has(key)) meta.set(key, a.content)
   }
-  const titleTag = /<title[^>]*>([^<]*)<\/title>/i.exec(head)?.[1]
+  const titleTag = /<title[^>]*>([^<]*)<\/title>/i.exec(html)?.[1]
 
   const abs = (u?: string) => {
     if (!u) return undefined

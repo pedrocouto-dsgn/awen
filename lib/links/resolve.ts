@@ -2,7 +2,7 @@ import "server-only"
 
 import { z } from "zod"
 
-import { classifyUrl, vimeoEmbedUrl, youtubeEmbedUrl } from "./providers"
+import { classifyUrl, pinterestPinId, vimeoEmbedUrl, youtubeEmbedUrl } from "./providers"
 import { parseOg } from "./og"
 import { safeFetch } from "./safe-fetch"
 
@@ -60,6 +60,83 @@ async function firstExistingImage(urls: string[]): Promise<string | null> {
     }
   }
   return null
+}
+
+const pinterestPin = z.object({
+  id: z.string(),
+  description: z.string().nullish(),
+  is_video: z.boolean().nullish(),
+  images: z.record(z.string(), z.object({ url: z.string(), width: z.number(), height: z.number() })).nullish(),
+  pinner: z.object({ full_name: z.string().nullish(), profile_url: z.string().nullish() }).nullish(),
+  board: z.object({ name: z.string().nullish() }).nullish(),
+})
+
+const pinterestInfo = z.object({ data: z.array(z.unknown()) })
+
+const HTML_ENTITY = /&(#\d+|amp|quot|#39|lt|gt);/g
+function decodeEntities(s: string): string {
+  return s.replace(HTML_ENTITY, (_, e: string) =>
+    e.startsWith("#") ? String.fromCodePoint(Number(e.slice(1))) : ({ amp: "&", quot: '"', lt: "<", gt: ">" })[e] ?? "",
+  )
+}
+
+/**
+ * Pinterest pins via the public widgets API (small JSON) instead of the pin page, whose
+ * Open Graph tags sit after megabytes of inline JSON and which may block server IPs.
+ * The image is upgraded to the original upload when available. Null falls back to Open Graph.
+ */
+async function resolvePinterest(rawUrl: string, knownPinId: string | null): Promise<ResolvedLink | null> {
+  let pinId = knownPinId
+  if (!pinId) {
+    // Short link (pin.it): follow redirects until a /pin/<id> URL appears.
+    try {
+      const res = await safeFetch(rawUrl, { stopAt: (u) => pinterestPinId(u) !== null, maxBytes: 6 * 1024 * 1024 })
+      pinId = pinterestPinId(res.url)
+    } catch {
+      return null
+    }
+  }
+  if (!pinId) return null
+
+  const info = pinterestInfo.safeParse(
+    await fetchJson(`https://widgets.pinterest.com/v3/pidgets/pins/info/?pin_ids=${pinId}`),
+  )
+  const parsed = info.success ? pinterestPin.safeParse(info.data.data[0]) : null
+  const pin = parsed?.success ? parsed.data : null
+  const sizes = Object.values(pin?.images ?? {}).sort((a, b) => b.width - a.width)
+  const largest = sizes[0]
+  if (!pin || !largest) return null
+
+  // i.pinimg.com/<size>/<hash path> → try the original upload, then 736x, then what the API gave.
+  const path = /^https:\/\/i\.pinimg\.com\/[^/]+\/(.+)$/.exec(largest.url)?.[1]
+  const candidates = path
+    ? [`https://i.pinimg.com/originals/${path}`, `https://i.pinimg.com/736x/${path}`]
+    : []
+  const imageUrl = (await firstExistingImage(candidates)) ?? largest.url
+
+  const description = pin.description ? decodeEntities(pin.description).trim() : ""
+  return {
+    provider: "pinterest",
+    sourceKind: "link",
+    type: "image",
+    url: `https://www.pinterest.com/pin/${pinId}/`,
+    title: description || null,
+    imageUrl,
+    imageIsMedia: true,
+    width: null,
+    height: null,
+    duration: null,
+    meta: {
+      provider: "pinterest",
+      siteName: "Pinterest",
+      host: "www.pinterest.com",
+      pinId,
+      isVideo: pin.is_video ?? false,
+      author: pin.pinner?.full_name ?? null,
+      authorUrl: pin.pinner?.profile_url ?? null,
+      board: pin.board?.name ?? null,
+    },
+  }
 }
 
 export async function resolveLink(rawUrl: string): Promise<ResolvedLink> {
@@ -126,13 +203,18 @@ export async function resolveLink(rawUrl: string): Promise<ResolvedLink> {
     }
   }
 
-  // Pinterest, Instagram and generic pages: Open Graph.
+  if (kind.provider === "pinterest") {
+    const pin = await resolvePinterest(rawUrl, kind.pinId)
+    if (pin) return pin
+  }
+
+  // Instagram, generic pages and Pinterest fallback: Open Graph.
   let title: string | null = null
   let imageUrl: string | null = null
   let finalUrl = rawUrl
   let siteName: string | null = null
   try {
-    const res = await safeFetch(rawUrl, { accept: "text/html,application/xhtml+xml", maxBytes: 2 * 1024 * 1024 })
+    const res = await safeFetch(rawUrl, { accept: "text/html,application/xhtml+xml", maxBytes: 6 * 1024 * 1024 })
     finalUrl = res.url.toString()
     if (res.contentType.startsWith("image/")) {
       // Direct image link.

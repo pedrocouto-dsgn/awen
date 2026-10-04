@@ -54,12 +54,18 @@ export async function assertPublicUrl(raw: string | URL): Promise<URL> {
   return url
 }
 
-type SafeFetchOptions = { timeoutMs?: number; maxBytes?: number; accept?: string }
+type SafeFetchOptions = {
+  timeoutMs?: number
+  maxBytes?: number
+  accept?: string
+  /** Stop following redirects once the next hop matches; returns it with an empty body. */
+  stopAt?: (url: URL) => boolean
+}
 
 export type SafeResponse = { url: URL; status: number; contentType: string; body: Uint8Array }
 
 export async function safeFetch(raw: string, options: SafeFetchOptions = {}): Promise<SafeResponse> {
-  const { timeoutMs = 8000, maxBytes = 3 * 1024 * 1024, accept = "*/*" } = options
+  const { timeoutMs = 8000, maxBytes = 3 * 1024 * 1024, accept = "*/*", stopAt } = options
   const controller = new AbortController()
   const timer = setTimeout(() => controller.abort(), timeoutMs)
   try {
@@ -75,6 +81,7 @@ export async function safeFetch(raw: string, options: SafeFetchOptions = {}): Pr
         await res.body?.cancel()
         if (!location) throw new Error("Redirect without location")
         url = await assertPublicUrl(new URL(location, url))
+        if (stopAt?.(url)) return { url, status: res.status, contentType: "", body: new Uint8Array() }
         continue
       }
       const declared = Number(res.headers.get("content-length") ?? 0)
