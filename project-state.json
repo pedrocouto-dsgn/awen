@@ -3,13 +3,13 @@
   "project": "Awen",
   "summary": "Banco de referências pessoal para direção criativa: imagens, vídeos e prompts, com análise por IA e aprovação manual.",
   "updatedAt": "2026-10-04",
-  "lastCommit": "68fd5cf",
+  "lastCommit": "f811915",
 
   "currentPhase": "Fase 2 — Ferramentas de trabalho",
   "nextStep": {
-    "milestone": "M13",
-    "title": "Moodboard com exportação (PNG, PDF, imagens separadas)",
-    "notes": "project_references já tem x, y, width, height, z_index e caption desde o M1 (posições no board)."
+    "milestone": "M14",
+    "title": "Anotações sobre a imagem e conclusão do modo aleatório",
+    "notes": "Fecha a Fase 2. Depois: Fase 3 (importação em lote, frames e trechos de vídeo etc.)."
   },
 
   "phases": {
@@ -68,8 +68,14 @@
           "commit": "403c049",
           "pending": "Extensão 0.2.0 (nova permissão scripting): o usuário recarrega em chrome://extensions e testa selecionar texto → 'Guardar texto como prompt' → botão direito na imagem → 'Salvar como resultado do prompt'."
         },
-        { "id": "M13", "title": "Moodboard com exportação (PNG, PDF, imagens separadas)", "status": "next" },
-        { "id": "M14", "title": "Anotações sobre a imagem e conclusão do modo aleatório", "status": "todo" }
+        {
+          "id": "M13",
+          "title": "Moodboard com exportação (PNG, PDF, imagens separadas)",
+          "status": "done",
+          "commit": "f811915",
+          "notes": "Board em /projects/[id]/board, largura fixa de 1600 unidades (lib/board/layout.ts). Exportação no navegador (R2 libera GET com CORS); PDF escrito à mão (uma página, JPEG), ZIP com fflate. Fundo e densidade ficam no localStorage."
+        },
+        { "id": "M14", "title": "Anotações sobre a imagem e conclusão do modo aleatório", "status": "next" }
       ]
     },
     "phase3": {
@@ -126,11 +132,15 @@
     { "owner": "usuário", "item": "Instalar (ou recarregar, versão 0.2.0) e testar a extensão de Chrome, incluindo a captura de prompt + resultado." },
     { "owner": "usuário", "item": "Criar chave no OpenRouter para ativar o fallback Qwen; depois o Claude envia as variáveis à Vercel e testa." },
     { "owner": "usuário", "item": "Conferir Supabase → Authentication → URL Configuration (Site URL e Redirect URLs com awen-theta.vercel.app)." },
+    { "owner": "usuário", "item": "Testar o moodboard em produção (botão Moodboard na página do projeto) e as 3 exportações." },
+    { "owner": "usuário", "item": "Opcional: o post do Instagram SOMO Visuals (Highlands) entrou antes da correção, com a capa de 360px e o ícone de play; apagar e colar de novo para pegar a capa limpa." },
     { "owner": "claude", "item": "Testar upload de vídeo local de ponta a ponta (nunca testado)." },
     { "owner": "claude", "item": "Testar o e-mail de 'esqueci a senha' em produção." }
   ],
 
   "decisions": [
+    "Instagram: resolver posts pela página de embed (/p/<shortcode>/embed/captioned/, JSON contextJSON → gql_data.shortcode_media), que traz a capa limpa em resolução máxima. O og:image de vídeos tem 360px e o ícone de play gravado na imagem.",
+    "Clicar na imagem (detalhe e revisão) abre o source_url. O aviso de envios fecha sozinho 7 s depois de tudo terminar (pausa com o mouse em cima; erros ficam).",
     "Revisão abre como feed (masonry) da fila; clicar abre a revisão individual, Esc/'Todas' volta. Detalhe e revisão têm botão 'Abrir no <site>' com o source_url.",
     "Pinterest: resolver pins pela API pública widgets.pinterest.com/v3/pidgets/pins/info (não pela página, cujo og:image fica depois de ~1,3 MB de JSON) e trocar o tamanho da imagem por /originals/.",
     "Prompts (M12): resultado e entradas ficam em R2 sob {owner}/prompts/{promptId}/, fora da biblioteca e da fila de revisão. Uma entrada pode apontar para uma referência existente."
