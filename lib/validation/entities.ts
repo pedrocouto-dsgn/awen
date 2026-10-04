@@ -42,3 +42,28 @@ export const projectUpdateSchema = projectCreateSchema
 export const projectItemsSchema = z.object({ referenceIds: z.array(z.uuid()).min(1).max(200) })
 
 export const ROLE_LABEL = { director: "Direção", photographer: "Fotografia", artist: "Arte" } as const
+
+const boardCoord = z.number().finite().min(-100_000).max(100_000)
+
+/** Moodboard save: only the items that changed. */
+export const boardSaveSchema = z.object({
+  items: z
+    .array(
+      z.object({
+        referenceId: z.uuid(),
+        x: boardCoord,
+        y: boardCoord,
+        width: z.number().finite().positive().max(100_000),
+        height: z.number().finite().positive().max(100_000),
+        z: z.number().int().min(-1_000_000).max(1_000_000),
+        caption: z
+          .string()
+          .trim()
+          .max(300)
+          .transform((v) => (v === "" ? null : v))
+          .nullable(),
+      }),
+    )
+    .min(1)
+    .max(500),
+})

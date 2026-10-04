@@ -1,6 +1,7 @@
 "use client"
 
-import { PencilIcon, StarIcon, Trash2Icon } from "lucide-react"
+import { LayoutDashboardIcon, PencilIcon, StarIcon, Trash2Icon } from "lucide-react"
+import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
 import { toast } from "sonner"
@@ -29,6 +30,11 @@ export function ProjectHeader({ project, total }: { project: Project; total: num
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
+          <Button variant="accent" size="sm" asChild>
+            <Link href={`/projects/${project.id}/board`}>
+              <LayoutDashboardIcon /> Moodboard
+            </Link>
+          </Button>
           <Button
             variant={project.is_active ? "secondary" : "outline"}
             size="sm"
