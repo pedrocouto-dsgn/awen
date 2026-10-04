@@ -5,6 +5,7 @@ import {
   ChevronLeftIcon,
   ChevronRightIcon,
   InboxIcon,
+  LayoutGridIcon,
   Loader2Icon,
   MoreHorizontalIcon,
   PencilIcon,
@@ -30,6 +31,7 @@ import { useAnalysis } from "@/features/analysis/analysis-provider"
 import { ACCEPT } from "@/features/ingest/components/add-reference-dialog"
 import { useIngest } from "@/features/ingest/ingest-provider"
 import { MediaViewer } from "@/features/media/media-viewer"
+import { SourceLink } from "@/features/media/source-link"
 import { ReferenceLinks } from "@/features/references/reference-links"
 import type { ActiveProject } from "@/lib/references/links"
 import type { ReferenceView } from "@/lib/references/view"
@@ -38,6 +40,7 @@ import type { VocabCategory } from "@/types/database"
 
 import type { ReviewItem } from "../data"
 import { DeleteReferenceDialog } from "./delete-reference-dialog"
+import { ReviewGrid } from "./review-grid"
 import { draftFrom, ReviewPanel, type ReviewDraft } from "./review-panel"
 
 type Props = { items: ReviewItem[]; vocab: VocabMap; queued: number; activeProject: ActiveProject }
@@ -75,6 +78,8 @@ export function ReviewScreen({ items, vocab: initialVocab, queued, activeProject
   const { retryFailed, refreshStats } = useAnalysis()
   const { addFiles } = useIngest()
 
+  // The queue opens as a feed; picking an item opens it for review.
+  const [view, setView] = useState<"grid" | "single">("grid")
   const [hidden, setHidden] = useState<Set<string>>(new Set())
   const [currentId, setCurrentId] = useState<string | null>(items[0]?.id ?? null)
   const [lastIndex, setLastIndex] = useState(0)
@@ -225,9 +230,19 @@ export function ReviewScreen({ items, vocab: initialVocab, queued, activeProject
     }
   }, [current, retryFailed])
 
+  const openItem = useCallback(
+    (id: string) => {
+      setCurrentId(id)
+      setLastIndex(Math.max(0, list.findIndex((i) => i.id === id)))
+      setEditing(false)
+      setView("single")
+    },
+    [list],
+  )
+
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
-      if (!current) return
+      if (!current || view !== "single") return
       if (editing) {
         if (e.key === "Escape") {
           e.preventDefault()
@@ -240,7 +255,8 @@ export function ReviewScreen({ items, vocab: initialVocab, queued, activeProject
       }
       if (e.metaKey || e.ctrlKey || e.altKey || isEditableTarget(e.target)) return
       const key = e.key.toLowerCase()
-      if (key === "a") void decide("approved")
+      if (e.key === "Escape") setView("grid")
+      else if (key === "a") void decide("approved")
       else if (key === "r") void decide("rejected")
       else if (key === "e") setEditing(true)
       else if (e.key === "ArrowRight") goTo(index + 1)
@@ -252,7 +268,7 @@ export function ReviewScreen({ items, vocab: initialVocab, queued, activeProject
     }
     window.addEventListener("keydown", onKey)
     return () => window.removeEventListener("keydown", onKey)
-  }, [current, decide, editing, goTo, index, resetDraft, saveEdits, updateDraft])
+  }, [current, decide, editing, goTo, index, resetDraft, saveEdits, updateDraft, view])
 
   if (!current || !draft) {
     return (
@@ -262,9 +278,20 @@ export function ReviewScreen({ items, vocab: initialVocab, queued, activeProject
         description={
           queued > 0
             ? `${queued} ${queued === 1 ? "referência está" : "referências estão"} na fila de análise. Elas aparecem aqui quando a IA terminar.`
-            : "Quando novas referências forem analisadas, elas aparecem aqui, uma de cada vez."
+            : "Quando novas referências forem analisadas, elas aparecem aqui."
         }
       />
+    )
+  }
+
+  if (view === "grid") {
+    return (
+      <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto p-3 pt-0">
+        <p className="px-1 text-xs text-muted-foreground tabular-nums" aria-live="polite">
+          {list.length} para revisar{queued > 0 ? ` · +${queued} em análise` : ""} · clique numa imagem para revisar
+        </p>
+        <ReviewGrid items={list} onOpen={openItem} />
+      </div>
     )
   }
 
@@ -274,6 +301,7 @@ export function ReviewScreen({ items, vocab: initialVocab, queued, activeProject
         aria-label="Mídia"
         className="relative h-[55svh] shrink-0 overflow-hidden rounded-2xl bg-media lg:h-auto lg:min-h-0 lg:min-w-0 lg:flex-1"
       >
+        <SourceLink reference={current} className="absolute top-4 right-4 z-10" />
         <MediaViewer media={current.media} aspectRatio={current.aspect_ratio} title={current.title}>
           {current.media.kind === "none" ? (
             <>
@@ -311,6 +339,9 @@ export function ReviewScreen({ items, vocab: initialVocab, queued, activeProject
               style={{ width: `${((index + 1) / Math.max(1, list.length)) * 100}%` }}
             />
           </div>
+          <Button variant="ghost" size="sm" onClick={() => setView("grid")} title="Ver todas (Esc)">
+            <LayoutGridIcon /> Todas
+          </Button>
           <Button
             variant="ghost"
             size="icon-sm"

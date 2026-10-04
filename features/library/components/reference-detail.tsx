@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { useAnalysis } from "@/features/analysis/analysis-provider"
 import { MediaViewer } from "@/features/media/media-viewer"
+import { SourceLink } from "@/features/media/source-link"
 import { DeleteReferenceDialog } from "@/features/review/components/delete-reference-dialog"
 import { draftFrom, ReviewPanel, type ReviewDraft } from "@/features/review/components/review-panel"
 import type { ReferenceView } from "@/lib/references/view"
@@ -183,6 +184,7 @@ export function ReferenceDetail({
         >
           <ArrowLeftIcon /> Voltar
         </Button>
+        <SourceLink reference={reference} className="absolute top-4 right-4 z-10" />
         <MediaViewer media={reference.media} aspectRatio={reference.aspect_ratio} title={reference.title} />
       </section>
 
