@@ -3,7 +3,7 @@
   "project": "Awen",
   "summary": "Banco de referências pessoal para direção criativa: imagens, vídeos e prompts, com análise por IA e aprovação manual.",
   "updatedAt": "2026-10-04",
-  "lastCommit": "f811915",
+  "lastCommit": "ce13fe9",
 
   "currentPhase": "Fase 2 — Ferramentas de trabalho",
   "nextStep": {
@@ -139,6 +139,7 @@
   ],
 
   "decisions": [
+    "Moodboards: aba própria no menu lateral (/moodboards, um card por projeto que abre o board); o board continua em /projects/[id]/board.",
     "Instagram: resolver posts pela página de embed (/p/<shortcode>/embed/captioned/, JSON contextJSON → gql_data.shortcode_media), que traz a capa limpa em resolução máxima. O og:image de vídeos tem 360px e o ícone de play gravado na imagem.",
     "Clicar na imagem (detalhe e revisão) abre o source_url. O aviso de envios fecha sozinho 7 s depois de tudo terminar (pausa com o mouse em cima; erros ficam).",
     "Revisão abre como feed (masonry) da fila; clicar abre a revisão individual, Esc/'Todas' volta. Detalhe e revisão têm botão 'Abrir no <site>' com o source_url.",
