@@ -9,6 +9,7 @@ import {
   ImageIcon,
   ImagesIcon,
   InboxIcon,
+  LayoutDashboardIcon,
   Loader2Icon,
   PaletteIcon,
   PauseIcon,
@@ -323,6 +324,7 @@ function Sections({ expanded, params, onNavigate }: { expanded: boolean; params:
   const stats = useOptionalAnalysis()?.stats
   const shortcut = pathname === "/library" ? EXPLORE.find((e) => e.key === params)?.key : undefined
   const [randomPending, startRandom] = useTransition()
+  const isBoard = /^\/projects\/[^/]+\/board/.test(pathname)
 
   return (
     <>
@@ -397,7 +399,22 @@ function Sections({ expanded, params, onNavigate }: { expanded: boolean; params:
 
       <Section label="Organizar" expanded={expanded}>
         <NavRow href="/people" label="Artistas" icon={PaletteIcon} expanded={expanded} onNavigate={onNavigate} />
-        <NavRow href="/projects" label="Projetos" icon={FolderIcon} expanded={expanded} onNavigate={onNavigate} />
+        <NavRow
+          href="/projects"
+          label="Projetos"
+          icon={FolderIcon}
+          active={pathname.startsWith("/projects") && !isBoard}
+          expanded={expanded}
+          onNavigate={onNavigate}
+        />
+        <NavRow
+          href="/moodboards"
+          label="Moodboards"
+          icon={LayoutDashboardIcon}
+          active={pathname === "/moodboards" || isBoard}
+          expanded={expanded}
+          onNavigate={onNavigate}
+        />
       </Section>
     </>
   )

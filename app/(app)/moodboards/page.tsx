@@ -1,19 +1,19 @@
 import type { Metadata } from "next"
 
 import { PageBreadcrumb } from "@/components/shell/page-breadcrumb"
-import { ProjectsGrid } from "@/features/projects/projects-grid"
+import { MoodboardsGrid } from "@/features/board/moodboards-grid"
 import { getProjectCards } from "@/lib/projects/cards"
 import { createClient } from "@/lib/supabase/server"
 
-export const metadata: Metadata = { title: "Projetos" }
+export const metadata: Metadata = { title: "Moodboards" }
 
-export default async function ProjectsPage() {
+export default async function MoodboardsPage() {
   const cards = await getProjectCards(await createClient())
 
   return (
     <>
-      <PageBreadcrumb items={[{ label: "Projetos" }]} />
-      <ProjectsGrid projects={cards} />
+      <PageBreadcrumb items={[{ label: "Moodboards" }]} />
+      <MoodboardsGrid projects={cards} />
     </>
   )
 }
